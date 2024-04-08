@@ -16,14 +16,14 @@ import (
 
 type data struct {
 	//dir                  float64 // Bewegungsrichtung
-	pos, vel, acc, z, z1 vec     // Position, Geschwindigkeit, Beschleunigung (temp Werte)
-	accBorder            float64 // Beschleunigung weg vom Rand
-	maxVel               float64 // Betrag der Maximalgeschwindigkeit,
-	absVel               float64 // Betrag der aktuellen Geschwindigkeit
-	ahead                float64 // Abstand des "Ziehpunkts" (die Deichsel), an dem die Beschleunigung ansetzt, zum Objekt.
-	maxAccPhi            float64 // maximale Winkeländerung für die Beschleunigung auf den Ziehpunkt
-	accPhi               float64
-	eps                  float64 // Elastizität (Impulserhaltung)
+	pos, vel, acc vec     // Position, Geschwindigkeit, Beschleunigung (temp Werte)
+	accBorder     float64 // Beschleunigung weg vom Rand
+	maxVel        float64 // Betrag der Maximalgeschwindigkeit,
+	absVel        float64 // Betrag der aktuellen Geschwindigkeit
+	ahead         float64 // Abstand des "Ziehpunkts" (die Deichsel), an dem die Beschleunigung ansetzt, zum Objekt.
+	maxAccPhi     float64 // maximale Winkeländerung für die Beschleunigung auf den Ziehpunkt
+	accPhi        float64
+	eps           float64 // Elastizität (Impulserhaltung)
 
 	viewAngle float64 // Öffnungswinkel des Sichtfelds
 	viewMag   float64 // Sichtweite
@@ -61,7 +61,7 @@ func New(w *world.World, x, y float64) *data {
 		g:         0x00,
 		b:         0x50,
 		a:         0x60,
-		accBorder: 0.5,
+		accBorder: 0.8,
 		maxVel:    0.5,
 		absVel:    1,
 		ahead:     1,
@@ -98,8 +98,8 @@ func (a *data) isOutside() bool {
 // Die neue Position e.pos aus e.vel und e.acc bestimmen.
 func (a *data) Update(others []Animal) {
 	a.randomStep()
-	a.repelAtBorder()
 	a.avoidCollisionWithSeenObjects(others)
+	a.repelFromWater()
 	a.applyMove(others)
 
 }
@@ -150,19 +150,6 @@ func (a *data) applyMove(others []Animal) {
 	}
 	//a.makeAnimal()
 
-	// Grenzen der Welt beachten
-	if float32(a.pos[0]) >= (*a.w).Width()-(*a.w).Margin() {
-		a.pos[0] = float64((*a.w).Width() - (*a.w).Margin())
-	} else if float32(a.pos.X()) <= (*a.w).Margin() {
-		a.pos[0] = float64((*a.w).Margin())
-	}
-
-	if float32(a.pos.Y()) >= (*a.w).Height()-(*a.w).Margin() {
-		a.pos[1] = float64((*a.w).Height() - (*a.w).Margin())
-	} else if float32(a.pos.Y()) <= (*a.w).Margin() {
-		a.pos[1] = float64((*a.w).Margin())
-	}
-
 }
 
 // Vor.: ?
@@ -197,43 +184,26 @@ func (a *data) isAtWater() bool {
 	return a.atWater
 }
 
-// Vor.:
-// Eff.: Stößt das Objekt von der Wand ab
-// Erg.:
-func (a *data) repelAtBorder() {
-	// Wenn das Objekt in die Nähe des Bildschirmrandes kommt,
-	// wird es senkrecht dazu beschleunigt (dreht also um)
-	// TODO: Die Beschleunigung vom Rand weg sollte Proportional zur Entfernung zum Rand sein.
+// TODO: noch programmieren
+func (a *data) avoidWater() {
+	// Grenzen der Welt beachten
+	/*
+		if float32(a.pos[0]) >= a.w.Width {
+			a.pos[0] = float64(a.w.Width)
+		} else if float32(a.pos.X()) <= 0 {
+			a.pos[0] = 0
+		}
 
-	//n, s, o, w := a.w.GetTileBorders(int(a.pos[0]), int(a.pos[1]))
-	//fmt.Println("Grenzen:", n, s, o, w)
-	repel := vec{0, 0}
-	const d = 6
-	a.atWater = false
-	if float32(a.pos.X()) >= (*a.w).Width()-((*a.w).Margin()+d) {
-		repel[0] = -a.accBorder
-		a.atWater = true
-	} else if float32(a.pos.X()) <= (*a.w).Margin()+d {
-		repel[0] = a.accBorder
-		a.atWater = true
-	}
-
-	if float32(a.pos.Y()) >= (*a.w).Height()-((*a.w).Margin()+d) {
-		repel[1] = -a.accBorder
-		a.atWater = true
-	} else if float32(a.pos.Y()) <= (*a.w).Margin()+d {
-		repel[1] = a.accBorder
-		a.atWater = true
-	}
-	a.vel = a.vel.Add(repel)
+		if float32(a.pos.Y()) >= a.w.Height {
+			a.pos[1] = float64(a.w.Height)
+		} else if float32(a.pos.Y()) <= 0 {
+			a.pos[1] = 0
+		}
+	*/
 }
 
-// Vor.:
-// Eff.: Das Objekt beschleunigt von anderen Objekten, die im Sichtfeld liegen weg
-// Erg.:
 func (a *data) avoidCollisionWithSeenObjects(others []Animal) {
 	avg := vec{0, 0}
-
 	_, dirs := a.SeeOthers(others)
 	for _, dir := range dirs {
 		dir = dir.Unit()
@@ -243,11 +213,66 @@ func (a *data) avoidCollisionWithSeenObjects(others []Animal) {
 	if len(dirs) > 0 {
 		avg.Scale(1 / float64(len(dirs)))
 	}
-
 	z := a.vel.Unit().Scale(a.ahead)
 	z = z.Add(avg.Unit().Scale(-1))
 	a.vel = a.vel.Unit().Scale(a.maxVel).Add(z)
+}
 
+// Vor.:
+// Eff.: Addiert in der Nähe vom Wasser ein Geschwindigkeitskomponente vom Wasser weg
+// auf die aktuelle Geschwindigkeit.
+// Erg.:
+func (a *data) repelFromWater() {
+	// Wenn das Objekt in die Nähe des Bildschirmrandes kommt,
+	// wird es senkrecht dazu beschleunigt (dreht also um)
+	// TODO: Die Beschleunigung vom Rand weg sollte Proportional zur Entfernung zum Rand sein.
+
+	n, no, o, so, s, sw, w, nw := (*a.w).GetTileBorders(int(a.pos[0]), int(a.pos[1]))
+	tileX, tileY := (*a.w).GetXYTile(int(a.pos.X()), int(a.pos.Y()))
+
+	//fmt.Println("Tile x,y", tileX, tileY, "Grenzen:", n, s, o, w)
+	repel := vec{0, 0}
+	const d = 15
+
+	if n && a.pos.Y() <= float64((*a.w).GetTileSizeScaled()*tileY+d) {
+		repel[1] = a.accBorder
+	}
+
+	if no && a.pos.Y() <= float64((*a.w).GetTileSizeScaled()*tileY+d) && float64(a.pos.X()) >= float64((*a.w).GetTileSizeScaled()*(tileX+1)-d) {
+		repel[1] = a.accBorder
+		repel[0] = -a.accBorder
+	}
+
+	if o && a.pos.X() >= float64((*a.w).GetTileSizeScaled()*(tileX+1)-d) {
+		repel[0] = -a.accBorder
+	}
+
+	if so && a.pos.X() >= float64((*a.w).GetTileSizeScaled()*(tileX+1)-d) && float64(a.pos.Y()) >= float64((*a.w).GetTileSizeScaled()*(tileY+1)-d) {
+		repel[0] = -a.accBorder
+		repel[1] = -a.accBorder
+	}
+
+	if s && a.pos.Y() >= float64((*a.w).GetTileSizeScaled()*(tileY+1)-d) {
+		repel[1] = -a.accBorder
+	}
+
+	if sw && a.pos.Y() >= float64((*a.w).GetTileSizeScaled()*(tileY+1)-d) && float64(a.pos.X()) <= float64((*a.w).GetTileSizeScaled()*tileX+d) {
+		repel[1] = -a.accBorder
+		repel[0] = a.accBorder
+
+	}
+
+	if w && a.pos.X() <= float64((*a.w).GetTileSizeScaled()*tileX+d) {
+		repel[0] = a.accBorder
+	}
+
+	if nw && a.pos.X() <= float64((*a.w).GetTileSizeScaled()*tileX+d) && float64(a.pos.Y()) <= float64((*a.w).GetTileSizeScaled()*tileY+d) {
+		repel[0] = a.accBorder
+		repel[1] = a.accBorder
+
+	}
+
+	a.vel = a.vel.Add(repel)
 }
 
 // Vor.: ?

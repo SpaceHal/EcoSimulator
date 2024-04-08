@@ -1,5 +1,5 @@
 # EcoSimulator
-LWB Softwareprojek
+LWB Softwareprojekt
 
 ## Linux
 Notwendige Pakete:

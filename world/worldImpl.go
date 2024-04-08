@@ -47,7 +47,7 @@ func init() {
 }
 
 // Vor.: -
-// Erg.: ein neuer Welt 
+// Erg.: ein neuer Welt
 func New(width float32, height float32, img *ebiten.Image) *data {
 	wo := &data{
 		width:    width,
@@ -121,7 +121,7 @@ func New(width float32, height float32, img *ebiten.Image) *data {
 }
 
 // Vor.: -
-// Eff.: Ändert, ob das Gitter gezeigt wird oder nicht. 
+// Eff.: Ändert, ob das Gitter gezeigt wird oder nicht.
 // Erg.: -
 func (wo *data) ToggleGrid() {
 	wo.grid = !wo.grid
@@ -129,7 +129,7 @@ func (wo *data) ToggleGrid() {
 }
 
 // Vor.: -
-// Eff.: Schaltet den Debug-Modus an und aus. 
+// Eff.: Schaltet den Debug-Modus an und aus.
 // Erg.: -
 func (wo *data) ToggleDebug() {
 	wo.debug = !wo.debug
@@ -143,18 +143,29 @@ func (wo *data) GetDebug() bool {
 	return wo.debug
 }
 
-/*
+func (wo *data) GetXYTile(x, y int) (tileX, tileY int) {
+	tileX = x / (int(wo.tileSize) * int(wo.scale))
+	tileY = y / (int(wo.tileSize) * int(wo.scale))
+	return
+}
+
+func (wo *data) GetTileSizeScaled() int {
+	return int(wo.tileSize) * int(wo.scale)
+}
+
 // Vor.:
 // Eff.: Gibt für die Kachel mit den Pixelkoordinaten (x,y) an, ob in der Himmelsrichtung
 // N,S,O,W eine Wasserkachel liegt.
 // Erg.:
-func (wo *data) GetTileBorders(x, y int) (bool, bool, bool, bool) {
-	n, _, o, _, s, _, w, _ := wo.areNeighborsGround(x, y, wo.layers[1])
-	n, s, o, w = !n, !s, !o, !w
+func (wo *data) GetTileBorders(x, y int) (n, no, o, so, s, sw, w, nw bool) {
+	tileX, tileY := wo.GetXYTile(x, y)
+	//tileX := x / (int(wo.tileSize) * int(wo.scale))
+	//tileY := y / (int(wo.tileSize) * int(wo.scale))
+	n, no, o, so, s, sw, w, nw = wo.areNeighborsGround(tileX, tileY, wo.layers[1])
+	n, no, o, so, s, sw, w, nw = !n, !no, !o, !so, !s, !sw, !w, !nw
 
-	return n, s, o, w
+	return
 }
-*/
 
 // Vor.: -
 // Eff.: -
@@ -373,14 +384,12 @@ func boolToInt(bit bool) int {
 	return bitSetVar
 }
 
-// 
 func (wo *data) setTileInLayer(x, y int, l []int, value int) {
 	if t, ok := wo.getTileNumber(x, y); ok {
 		l[t] = value
 	}
 }
 
-//
 func (wo *data) getTileFromLayer(x, y int, l []int) int {
 	if t, ok := wo.getTileNumber(x, y); ok {
 		return l[t]
@@ -520,4 +529,3 @@ func (wo *data) toggle(tileX, tileY int) {
 	wo.setTileInLayer(tileX, tileY, wo.layers[1], tileType)
 	//fmt.Printf("tx,ty: %d,%d (%d) stateOrth: %d, stateDiag: %d \n", tileX, tileY, tileX+(tileY*numTileX), stateOrth, stateDiag)
 }
-
