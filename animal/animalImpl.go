@@ -2,7 +2,6 @@ package eater
 
 import (
 	"ecosim/world"
-	"fmt"
 
 	//"fmt"
 	"image"
@@ -66,7 +65,7 @@ func New(world *world.World, x, y float64) *Animal {
 		g:         0x00,
 		b:         0x50,
 		a:         0x60,
-		accBorder: 0.3,
+		accBorder: 0.5,
 		maxVel:    0.5,
 		absVel:    1,
 		ahead:     1,
@@ -105,24 +104,19 @@ func (a *Animal) isOutside() bool {
 func (a *Animal) Update(others []*Animal) {
 	a.randomStep()
 	a.repelAtBorder()
-	a.separateFromOthers(others)
+	a.avoidCollisionWithSeenObjekts(others)
 	a.applyMove(others)
 
 }
 
 // Vor.:
-// Eff.: Die neue Position animal.pos ist bestimmt.
+// Eff.: Die neue Position animal.pos ist bestimmt. Das Überlappen von
+// Objekten wird vermieden
 // Erg.:
 func (a *Animal) applyMove(others []*Animal) {
 	//a.vel.Unit().Scale(a.maxVel)
 	//a.pos = a.pos.Add(a.vel)
 	newPos := a.pos.Add(a.vel)
-
-	// Kollisionsvermeidung mit den anderen Objekten
-	// https://editor.p5js.org/ZanRode/sketches/tbSBxca0J
-	// https://natureofcode.com/autonomous-agents/
-	// https://www.gorillasun.de/blog/an-algorithm-for-particle-systems-with-collisions/
-	// https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/previousinformation/physics6collisionresponse/
 
 	collission := false
 	sumDiff := vec{0, 0}
@@ -132,39 +126,25 @@ func (a *Animal) applyMove(others []*Animal) {
 		if a != other && dist.Magnitude() <= float64(a.imgHeight*1.1) {
 
 			collission = collission || true
-			/*
-				// Einfacher (un)elastischer Stoß. ==> Verhält sich nicht so gut aus :( <==
-				midPoint := a.pos.Add(other.pos).Scale(0.5)
-				a.pos = midPoint.Sub(dist.Unit().Scale(-float64(a.imgHeight/2 + 1)))
-				other.pos = midPoint.Sub(dist.Unit().Scale(+float64(a.imgHeight/2 + 1)))
-
-				relVel := other.vel.Sub(a.vel) // Geschwindigkeit, mit welcher die beiden Objekte sich relativ zueinander hinbewegen
-				normal := dist.Unit()
-				momentum := normal.Dot(relVel) * (1 + a.eps)
-				a.vel = a.vel.Add(normal.Scale(+momentum))
-				other.vel = a.vel.Sub(normal.Scale(momentum))
-			*/
-
 			// Einfaches Separieren
 			sumDiff = sumDiff.Add(dist.Unit())
 			counts++
-
 		}
 	}
 	if counts > 0 {
 		sumDiff = sumDiff.Scale(1 / counts)
-		sumDiff = sumDiff.Scale(1)
-		fmt.Println(sumDiff)
+		sumDiff = sumDiff.Scale(0.5)
+		//fmt.Println(sumDiff)
 		a.vel = a.vel.Add(sumDiff)
 	}
 	if !collission {
 		a.pos = newPos
-		a.b = 0x50
+		//a.b = 0x50
 	} else {
 		a.pos = a.pos.Add(a.vel)
-		a.b = 0xff
+		//a.b = 0xff
 	}
-	a.makeAnimal()
+	//a.makeAnimal()
 
 	// Grenzen der Welt beachten
 	if float32(a.pos[0]) >= a.w.Width-a.w.Margin {
@@ -220,8 +200,11 @@ func (a *Animal) repelAtBorder() {
 	// Wenn das Objekt in die Nähe des Bildschirmrandes kommt,
 	// wird es senkrecht dazu beschleunigt (dreht also um)
 	// TODO: Die Beschleunigung vom Rand weg sollte Proportional zur Entfernung zum Rand sein.
+
+	//n, s, o, w := a.w.GetTileBorders(int(a.pos[0]), int(a.pos[1]))
+	//fmt.Println("Grenzen:", n, s, o, w)
 	repel := vec{0, 0}
-	const d = 9
+	const d = 6
 	a.atWater = false
 	if float32(a.pos.X()) >= a.w.Width-(a.w.Margin+d) {
 		repel[0] = -a.accBorder
@@ -241,8 +224,10 @@ func (a *Animal) repelAtBorder() {
 	a.vel = a.vel.Add(repel)
 }
 
-// Hält die Objekte auf Abstand
-func (a *Animal) separateFromOthers(others []*Animal) {
+// Vor.:
+// Eff.: Das Objekt beschleunigt von anderen Objekten, die im Sichtfeld liegen weg
+// Erg.:
+func (a *Animal) avoidCollisionWithSeenObjekts(others []*Animal) {
 	avg := vec{0, 0}
 
 	_, dirs := a.SeeOthers(others)
@@ -255,10 +240,8 @@ func (a *Animal) separateFromOthers(others []*Animal) {
 		avg.Scale(1 / float64(len(dirs)))
 	}
 
-	// TODO: Wenn sich die Objekte trotzdem berühren, Impulserhaltung anwenden
 	z := a.vel.Unit().Scale(a.ahead)
 	z = z.Add(avg.Unit().Scale(-1))
-
 	a.vel = a.vel.Unit().Scale(a.maxVel).Add(z)
 
 }
@@ -266,7 +249,7 @@ func (a *Animal) separateFromOthers(others []*Animal) {
 // Vor.: ?
 // Eff.: ?
 // Erg.: Splice mit Objekten (seen) und deren Abstandsvektoren (direction),
-// die im Sichtfeld liegen
+// die im Sichtfeld des Objekts liegen
 func (a *Animal) SeeOthers(others []*Animal) (seen []*Animal, direction []vec) {
 	inView := false
 	for _, other := range others {

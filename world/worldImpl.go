@@ -135,10 +135,21 @@ func (wo *World) GetDebug() bool {
 	return wo.debug
 }
 
+// Vor.:
+// Eff.: Gibt für die Kachel mit den Pixelkoordinaten (x,y) an, ob in der Himmelsrichtung
+// N,S,O,W eine Wasserkachel liegt.
+// Erg.:
+func (wo *World) GetTileBorders(x, y int) (bool, bool, bool, bool) {
+	n, _, o, _, s, _, w, _ := wo.areNeighborsGround(x, y, wo.layers[1])
+	n, s, o, w = !n, !s, !o, !w
+
+	return n, s, o, w
+}
+
 /*
 Vor.: keine
 Eff.: kein
-Erg.: Die Nummer der Kachel für den Array mit den Kacheln und true ist geliefert.
+Erg.: Die Nummer der Kachel (für den Array mit den Kacheln) und true ist geliefert.
 Wenn die Kachel nicht existiert, wird -1 und false zurückgegeben.
 */
 func (wo *World) getTileNumber(tileX, tileY int) (int, bool) {
