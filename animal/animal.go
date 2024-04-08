@@ -2,6 +2,7 @@ package eater
 
 import (
 	"ecosim/world"
+	"fmt"
 
 	//"fmt"
 	"image"
@@ -124,32 +125,46 @@ func (a *Animal) applyMove(others []*Animal) {
 	// https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/previousinformation/physics6collisionresponse/
 
 	collission := false
+	sumDiff := vec{0, 0}
+	var counts float64
 	for _, other := range others {
 		dist := newPos.Sub(other.pos)
-		if a != other && dist.Magnitude() <= float64(a.imgHeight) {
+		if a != other && dist.Magnitude() <= float64(a.imgHeight*1.1) {
 
-			// Einfacher (un)elastischer Stoß. ==> Sieht nicht so gut aus <==
 			collission = collission || true
-			midPoint := a.pos.Add(other.pos).Scale(0.5)
-			a.pos = midPoint.Sub(dist.Unit().Scale(-float64(a.imgHeight/2 + 1)))
-			other.pos = midPoint.Sub(dist.Unit().Scale(+float64(a.imgHeight/2 + 1)))
+			/*
+				// Einfacher (un)elastischer Stoß. ==> Verhält sich nicht so gut aus :( <==
+				midPoint := a.pos.Add(other.pos).Scale(0.5)
+				a.pos = midPoint.Sub(dist.Unit().Scale(-float64(a.imgHeight/2 + 1)))
+				other.pos = midPoint.Sub(dist.Unit().Scale(+float64(a.imgHeight/2 + 1)))
 
-			relVel := other.vel.Sub(a.vel) // Geschwindigkeit, mit welcher die beiden Objekte sich relativ zueinander hinbewegen
-			normal := dist.Unit()
-			momentum := normal.Dot(relVel) * (1 + a.eps)
-			a.vel = a.vel.Add(normal.Scale(+momentum))
-			other.vel = a.vel.Sub(normal.Scale(momentum))
+				relVel := other.vel.Sub(a.vel) // Geschwindigkeit, mit welcher die beiden Objekte sich relativ zueinander hinbewegen
+				normal := dist.Unit()
+				momentum := normal.Dot(relVel) * (1 + a.eps)
+				a.vel = a.vel.Add(normal.Scale(+momentum))
+				other.vel = a.vel.Sub(normal.Scale(momentum))
+			*/
+
+			// Einfaches Separieren
+			sumDiff = sumDiff.Add(dist.Unit())
+			counts++
 
 		}
 	}
-
+	if counts > 0 {
+		sumDiff = sumDiff.Scale(1 / counts)
+		sumDiff = sumDiff.Scale(1)
+		fmt.Println(sumDiff)
+		a.vel = a.vel.Add(sumDiff)
+	}
 	if !collission {
 		a.pos = newPos
-		//a.g = 0x00
+		a.b = 0x50
 	} else {
-		//a.g = 0xff
+		a.pos = a.pos.Add(a.vel)
+		a.b = 0xff
 	}
-	//a.makeAnimal()
+	a.makeAnimal()
 
 	// Grenzen der Welt beachten
 	if float32(a.pos[0]) >= a.w.Width-a.w.Margin {
