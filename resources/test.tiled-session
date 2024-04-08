@@ -1,0 +1,77 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "grass.tsx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "Hills.tsx": {
+            "scaleInDock": 2.6109,
+            "scaleInEditor": 4.09
+        },
+        "Tilled_Dirt.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 4.09
+        },
+        "Water.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 4.09
+        },
+        "grass.tsx": {
+            "scaleInDock": 2.8169,
+            "scaleInEditor": 4.09
+        },
+        "tileSheet.tsx": {
+            "scaleInDock": 3,
+            "scaleInEditor": 4.09
+        },
+        "world.tmj": {
+            "scale": 1.8251,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 184.64741657991345,
+                "y": 86.57059887129472
+            }
+        },
+        "world.tmx": {
+            "scale": 1.67,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 183.83233532934136,
+                "y": 143.71257485029946
+            }
+        }
+    },
+    "last.exportedFilePath": "/Users/stefan/Documents/Schule/30_LWB_Info/10_Daten/SoftwareProjekt/EcoSim/resources",
+    "last.imagePath": "/Users/stefan/Documents/Schule/30_LWB_Info/10_Daten/SoftwareProjekt/Neuer Ordner/Sprout Lands - Sprites - Basic pack/Tilesets",
+    "map.lastUsedExportFilter": "CSV files (*.csv)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "map.width": 20,
+    "openFiles": [
+        "world.tmx",
+        "grass.tsx",
+        "Hills.tsx",
+        "Tilled_Dirt.tsx",
+        "Water.tsx"
+    ],
+    "project": "test.tiled-project",
+    "recentFiles": [
+        "world.tmx",
+        "Water.tsx",
+        "Tilled_Dirt.tsx",
+        "Hills.tsx",
+        "grass.tsx",
+        "tileSheet.tsx",
+        "world.tmj"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    }
+}
