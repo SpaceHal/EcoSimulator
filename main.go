@@ -14,7 +14,7 @@ import (
 
 var (
 	bunnies    [20]*eater.Animal
-	welt       *world.World
+	welt       world.World
 	tilesImage *ebiten.Image
 	waterImage *ebiten.Image
 )

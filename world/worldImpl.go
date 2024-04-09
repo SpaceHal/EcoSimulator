@@ -16,14 +16,14 @@ var (
 	waterImage *ebiten.Image
 )
 
-type World struct {
-	Width, Height float32
+type data struct {
+	width, height float32
 	tileSize      int     // Ursprüngliche Kachelgröße (z.B. 16x16), wird mit `scale` skaliert
 	scale         float32 // Skaliert das Hintergrundbild
 	numTileX      int     // Anzahle der Kacheln pro Zeile
 	numTileY      int     // Anzahle der Kacheln pro Spalte
 	coastMg       float32 // Entfernung der Küste auf den Kacheln zur Kachelwand ohne Skalierung
-	Margin        float32 // Entfernung der Küste auf den Kacheln zur Kachelwand ohne Skalierung
+	margin        float32 // Entfernung der Küste auf den Kacheln zur Kachelwand ohne Skalierung
 	r, g, b, a    uint8
 
 	layers [][]int
@@ -46,12 +46,12 @@ func init() {
 	waterImage = img
 }
 
-func New(width float32, height float32, img *ebiten.Image) *World {
-	wo := &World{
-		Width:    width,
-		Height:   height,
+func New(width float32, height float32, img *ebiten.Image) *data {
+	wo := &data{
+		width:    width,
+		height:   height,
 		coastMg:  3,
-		Margin:   (16 + 6) * 3,
+		margin:   (16 + 6) * 3,
 		r:        0xeb,
 		g:        0xeb,
 		b:        0xeb,
@@ -112,26 +112,26 @@ func New(width float32, height float32, img *ebiten.Image) *World {
 		},
 	}
 
-	wo.numTileX = int(wo.Width) / (int(wo.tileSize) * int(wo.scale))
-	wo.numTileY = int(wo.Height) / (int(wo.tileSize) * int(wo.scale))
+	wo.numTileX = int(wo.width) / (int(wo.tileSize) * int(wo.scale))
+	wo.numTileY = int(wo.height) / (int(wo.tileSize) * int(wo.scale))
 
 	return wo
 }
 
 // Vor.: keine
-// Eff.: Ändert den Zustand von world.grid
+// Eff.: Ändert den Zustand von data.grid
 // Erg.: keins
-func (wo *World) Grid() {
+func (wo *data) Grid() {
 	wo.grid = !wo.grid
-	fmt.Println("Debug World:", wo.debug)
+	fmt.Println("Debug world:", wo.debug)
 }
 
-func (wo *World) Debug() {
+func (wo *data) Debug() {
 	wo.debug = !wo.debug
 	fmt.Println("Debug Animals:", wo.debug)
 }
 
-func (wo *World) GetDebug() bool {
+func (wo *data) GetDebug() bool {
 	return wo.debug
 }
 
@@ -139,7 +139,7 @@ func (wo *World) GetDebug() bool {
 // Eff.: Gibt für die Kachel mit den Pixelkoordinaten (x,y) an, ob in der Himmelsrichtung
 // N,S,O,W eine Wasserkachel liegt.
 // Erg.:
-func (wo *World) GetTileBorders(x, y int) (bool, bool, bool, bool) {
+func (wo *data) GetTileBorders(x, y int) (bool, bool, bool, bool) {
 	n, _, o, _, s, _, w, _ := wo.areNeighborsGround(x, y, wo.layers[1])
 	n, s, o, w = !n, !s, !o, !w
 
@@ -152,7 +152,7 @@ Eff.: kein
 Erg.: Die Nummer der Kachel (für den Array mit den Kacheln) und true ist geliefert.
 Wenn die Kachel nicht existiert, wird -1 und false zurückgegeben.
 */
-func (wo *World) getTileNumber(tileX, tileY int) (int, bool) {
+func (wo *data) getTileNumber(tileX, tileY int) (int, bool) {
 	tileCount := tileX + (tileY * wo.numTileX)
 	if tileX >= wo.numTileX || tileY >= wo.numTileY || tileX < 0 || tileY < 0 {
 		return -1, false
@@ -164,7 +164,7 @@ func (wo *World) getTileNumber(tileX, tileY int) (int, bool) {
 }
 
 // Überprüft, ob die Nachbarfelder (N,NO,O,SO,S,SW,W,NW) Land oder Wasser sind
-func (wo *World) areNeighborsGround(tileX, tileY int, layer []int) (n, no, o, so, s, sw, w, nw bool) {
+func (wo *data) areNeighborsGround(tileX, tileY int, layer []int) (n, no, o, so, s, sw, w, nw bool) {
 
 	if tileY < 0 {
 		n = false
@@ -251,6 +251,18 @@ func getState(a, b, c, d bool) int {
 	return boolToInt(a)*8 + boolToInt(b)*4 + boolToInt(c)*2 + boolToInt(d)*1
 }
 
+func (wo *data) Width() float32 {
+	return wo.width
+}
+
+func (wo *data) Height() float32 {
+	return wo.height
+}
+
+func (wo *data) Margin() float32 {
+	return wo.margin
+}
+
 func boolToInt(bit bool) int {
 	var bitSetVar int
 	if bit {
@@ -259,13 +271,13 @@ func boolToInt(bit bool) int {
 	return bitSetVar
 }
 
-func (wo *World) setLayer(x, y int, l []int, value int) {
+func (wo *data) setLayer(x, y int, l []int, value int) {
 	if t, ok := wo.getTileNumber(x, y); ok {
 		l[t] = value
 	}
 }
 
-func (wo *World) getLayer(x, y int, l []int) int {
+func (wo *data) getLayer(x, y int, l []int) int {
 	if t, ok := wo.getTileNumber(x, y); ok {
 		return l[t]
 	} else {
@@ -273,7 +285,7 @@ func (wo *World) getLayer(x, y int, l []int) int {
 	}
 }
 
-func (wo *World) ToggleGround(mx, my int) {
+func (wo *data) ToggleGround(mx, my int) {
 	tileX := mx / (int(wo.tileSize) * int(wo.scale))
 	tileY := my / (int(wo.tileSize) * int(wo.scale))
 
@@ -305,7 +317,7 @@ func (wo *World) ToggleGround(mx, my int) {
 	wo.toggle(tileX+1, tileY-1)
 }
 
-func (wo *World) toggle(tileX, tileY int) {
+func (wo *data) toggle(tileX, tileY int) {
 	if tileX >= wo.numTileX || tileY >= wo.numTileY || tileX < 0 || tileY < 0 {
 		return
 	}
@@ -438,14 +450,14 @@ func (wo *World) toggle(tileX, tileY int) {
 
 }
 
-func (wo *World) Draw(dst *ebiten.Image, c int) {
+func (wo *data) Draw(dst *ebiten.Image, c int) {
 	//dst.Fill(color.NRGBA{wo.r, wo.g, wo.b, wo.a})
 	//vector.StrokeRect(dst, wo.Margin, wo.Margin, wo.Width-2*wo.Margin, wo.Height-2*wo.Margin, 2, color.Gray{200}, true)
 
 	nW := waterImage.Bounds().Dx() // Gibt die Breite des Tilesheets
 	tileXCount := nW / wo.tileSize // Anzahl der Tiles in x Richtung im Tile Sheet (25)
 
-	xCount := int(wo.Width/wo.scale) / wo.tileSize // Anzahl der Tiles in xRichtung im SCREEN
+	xCount := int(wo.width/wo.scale) / wo.tileSize // Anzahl der Tiles in xRichtung im SCREEN
 
 	// ========  Layer 0 - Wasser =========
 	for i, t := range wo.layers[0] {
@@ -466,7 +478,7 @@ func (wo *World) Draw(dst *ebiten.Image, c int) {
 	nW = tilesImage.Bounds().Dx() // Gibt die Breite des Tilesheets
 	tileXCount = nW / wo.tileSize // Anzahl der Tiles in x Richtung im Tile Sheet (25)
 
-	xCount = int(wo.Width/wo.scale) / wo.tileSize // Anzahl der Tiles in x Richtung im SCREEN
+	xCount = int(wo.width/wo.scale) / wo.tileSize // Anzahl der Tiles in x Richtung im SCREEN
 	for i, t := range wo.layers[1] {
 		op := &ebiten.DrawImageOptions{}
 
