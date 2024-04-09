@@ -121,7 +121,7 @@ func New(width float32, height float32, img *ebiten.Image) *data {
 // Vor.: keine
 // Eff.: Ändert den Zustand von data.grid
 // Erg.: keins
-func (wo *data) Grid() {
+func (wo *data) ToggleGrid() {
 	wo.grid = !wo.grid
 	fmt.Println("Debug world:", wo.debug)
 }
@@ -135,6 +135,7 @@ func (wo *data) GetDebug() bool {
 	return wo.debug
 }
 
+/*
 // Vor.:
 // Eff.: Gibt für die Kachel mit den Pixelkoordinaten (x,y) an, ob in der Himmelsrichtung
 // N,S,O,W eine Wasserkachel liegt.
@@ -145,6 +146,7 @@ func (wo *data) GetTileBorders(x, y int) (bool, bool, bool, bool) {
 
 	return n, s, o, w
 }
+*/
 
 /*
 Vor.: keine

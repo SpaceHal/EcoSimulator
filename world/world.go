@@ -6,46 +6,46 @@ import (
 
 // Vor.: -
 // Erg.: ein neuer Welt 
-// New (width float32, height float32, img *ebiten.Image) *data // *data erfüllt das Interface World 
+// New (width, height float32, img *ebiten.Image) *data // *data erfüllt das Interface World 
 
 type World interface {
-	// Vor.: keine
-	// Eff.: Ändert den Zustand von world.grid
-	// Erg.: keins
-	Grid() 
+	// Vor.: -
+	// Eff.: Ändert, ob das Gitter gezeigt wird oder nicht. 
+	// Erg.: -
+	ToggleGrid() 
 
+	// Vor.: -
+	// Eff.: Schaltet den Debug-Modus an und aus. 
+	// Erg.: -
 	Debug()
 
+	// Vor.: -
+	// Eff.: -
+	// Erg.: Liefert den aktuellen Status des Debug-Modus.
 	GetDebug() bool 
-	
-	// Vor.:
-	// Eff.: Gibt für die Kachel mit den Pixelkoordinaten (x,y) an, ob in der Himmelsrichtung
-	// N,S,O,W eine Wasserkachel liegt.
-	// Erg.:
-	GetTileBorders(x, y int) (bool, bool, bool, bool) 
 
-	// Vor.: keine
-	// Eff.: kein
-	// Erg.: Die Nummer der Kachel (für den Array mit den Kacheln) und true ist geliefert.
-	// Wenn die Kachel nicht existiert, wird -1 und false zurückgegeben.
-	getTileNumber(tileX, tileY int) (int, bool) 
-
-	// Überprüft, ob die Nachbarfelder (N,NO,O,SO,S,SW,W,NW) Land oder Wasser sind
-	areNeighborsGround(tileX, tileY int, layer []int) (n, no, o, so, s, sw, w, nw bool) 
-	
+	// Vor.: -
+	// Eff.: -
+	// Erg.: Liefert die Breite des Weltes in Pixel.
 	Width() float32
-	
+
+	// Vor.: -
+	// Eff.: -
+	// Erg.: Liefert die Hoehe des Weltes in Pixel.	
 	Height() float32
 	
+	// Vor.: -
+	// Eff.: -
+	// Erg.: Liefert die Entfernung der Küste auf den Kacheln zur Kachelwand ohne Skalierung.
 	Margin() float32
-	
-	setLayer(x, y int, l []int, value int) 
 
-	getLayer(x, y int, l []int) int 
-
+	// Vor.: -
+	// Eff.: Das geklickte Kaestchen wir durch Klicken zwischen Boden und Wasser umgechaltet.
+	// Erg.: -
 	ToggleGround(mx, my int) 
 	
-	toggle(tileX, tileY int) 
-
+	// Vor.: -
+	// Eff.: Der Welt wird gezeichnet. 
+	// Erg.: -
 	Draw(dst *ebiten.Image, c int) 
 }

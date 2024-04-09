@@ -38,7 +38,7 @@ func (g *Game) Update() error {
 
 	// Kachel-Gitter anzeigen
 	if inpututil.IsKeyJustPressed(ebiten.KeyG) {
-		welt.Grid()
+		welt.ToggleGrid()
 	}
 
 	// Kachel-Gitter anzeigen
