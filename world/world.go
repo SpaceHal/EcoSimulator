@@ -17,7 +17,7 @@ type World interface {
 	// Vor.: -
 	// Eff.: Schaltet den Debug-Modus an und aus. 
 	// Erg.: -
-	Debug()
+	ToggleDebug()
 
 	// Vor.: -
 	// Eff.: -

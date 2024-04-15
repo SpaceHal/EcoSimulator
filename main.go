@@ -43,7 +43,7 @@ func (g *Game) Update() error {
 
 	// Kachel-Gitter anzeigen
 	if inpututil.IsKeyJustPressed(ebiten.KeyD) {
-		welt.Debug()
+		welt.ToggleDebug()
 	}
 
 	// Mausposition einlesen

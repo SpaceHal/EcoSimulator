@@ -46,6 +46,8 @@ func init() {
 	waterImage = img
 }
 
+// Vor.: -
+// Erg.: ein neuer Welt 
 func New(width float32, height float32, img *ebiten.Image) *data {
 	wo := &data{
 		width:    width,
@@ -118,19 +120,25 @@ func New(width float32, height float32, img *ebiten.Image) *data {
 	return wo
 }
 
-// Vor.: keine
-// Eff.: Ändert den Zustand von data.grid
-// Erg.: keins
+// Vor.: -
+// Eff.: Ändert, ob das Gitter gezeigt wird oder nicht. 
+// Erg.: -
 func (wo *data) ToggleGrid() {
 	wo.grid = !wo.grid
 	fmt.Println("Debug world:", wo.debug)
 }
 
-func (wo *data) Debug() {
+// Vor.: -
+// Eff.: Schaltet den Debug-Modus an und aus. 
+// Erg.: -
+func (wo *data) ToggleDebug() {
 	wo.debug = !wo.debug
 	fmt.Println("Debug Animals:", wo.debug)
 }
 
+// Vor.: -
+// Eff.: -
+// Erg.: Liefert den aktuellen Status des Debug-Modus.
 func (wo *data) GetDebug() bool {
 	return wo.debug
 }
@@ -148,12 +156,114 @@ func (wo *data) GetTileBorders(x, y int) (bool, bool, bool, bool) {
 }
 */
 
-/*
-Vor.: keine
-Eff.: kein
-Erg.: Die Nummer der Kachel (für den Array mit den Kacheln) und true ist geliefert.
-Wenn die Kachel nicht existiert, wird -1 und false zurückgegeben.
-*/
+// Vor.: -
+// Eff.: -
+// Erg.: Liefert die Breite des Weltes in Pixel.
+func (wo *data) Width() float32 {
+	return wo.width
+}
+
+// Vor.: -
+// Eff.: -
+// Erg.: Liefert die Hoehe des Weltes in Pixel.
+func (wo *data) Height() float32 {
+	return wo.height
+}
+
+// Vor.: -
+// Eff.: -
+// Erg.: Liefert die Entfernung der Küste auf den Kacheln zur Kachelwand ohne Skalierung.
+func (wo *data) Margin() float32 {
+	return wo.margin
+}
+
+func (wo *data) ToggleGround(mx, my int) {
+	tileX := mx / (int(wo.tileSize) * int(wo.scale))
+	tileY := my / (int(wo.tileSize) * int(wo.scale))
+
+	wo.toggle(tileX, tileY)
+
+	// Die Nachbarfelder aktualisieren
+	wo.toggle(tileX-1, tileY+1)
+	wo.toggle(tileX-1, tileY+1)
+
+	wo.toggle(tileX, tileY+1)
+	wo.toggle(tileX, tileY+1)
+
+	wo.toggle(tileX+1, tileY+1)
+	wo.toggle(tileX+1, tileY+1)
+
+	wo.toggle(tileX-1, tileY)
+	wo.toggle(tileX-1, tileY)
+
+	wo.toggle(tileX+1, tileY)
+	wo.toggle(tileX+1, tileY)
+
+	wo.toggle(tileX-1, tileY-1)
+	wo.toggle(tileX-1, tileY-1)
+
+	wo.toggle(tileX, tileY-1)
+	wo.toggle(tileX, tileY-1)
+
+	wo.toggle(tileX+1, tileY-1)
+	wo.toggle(tileX+1, tileY-1)
+}
+
+func (wo *data) Draw(dst *ebiten.Image, c int) {
+	//dst.Fill(color.NRGBA{wo.r, wo.g, wo.b, wo.a})
+	//vector.StrokeRect(dst, wo.Margin, wo.Margin, wo.Width-2*wo.Margin, wo.Height-2*wo.Margin, 2, color.Gray{200}, true)
+
+	nW := waterImage.Bounds().Dx() // Gibt die Breite des Tilesheets
+	tileXCount := nW / wo.tileSize // Anzahl der Tiles in x Richtung im Tile Sheet (25)
+
+	xCount := int(wo.width/wo.scale) / wo.tileSize // Anzahl der Tiles in xRichtung im SCREEN
+
+	// ========  Layer 0 - Wasser =========
+	for i, t := range wo.layers[0] {
+
+		t = (c / 10) % 4 // Animationseffekt des Wassers
+		op := &ebiten.DrawImageOptions{}
+
+		// Ort, an den das aktuelle Tile hin geschoben werden soll
+		op.GeoM.Translate(float64((i%xCount)*wo.tileSize), float64((i/xCount)*wo.tileSize))
+		op.GeoM.Scale(float64(wo.scale), float64(wo.scale)) // Skaliert die 16x16 Tiles (auch die Position)
+
+		sx := (t % tileXCount) * wo.tileSize //
+		sy := (t / tileXCount) * wo.tileSize //
+		dst.DrawImage(waterImage.SubImage(image.Rect(sx, sy, sx+wo.tileSize, sy+wo.tileSize)).(*ebiten.Image), op)
+	}
+
+	// ========  Layer 1 - Land =========
+	nW = tilesImage.Bounds().Dx() // Gibt die Breite des Tilesheets
+	tileXCount = nW / wo.tileSize // Anzahl der Tiles in x Richtung im Tile Sheet (25)
+
+	xCount = int(wo.width/wo.scale) / wo.tileSize // Anzahl der Tiles in x Richtung im SCREEN
+	for i, t := range wo.layers[1] {
+		op := &ebiten.DrawImageOptions{}
+
+		// Ort, an den das aktuelle Tile hin geschoben werden soll (ohne Skalierung)
+		x := float64((i % xCount) * wo.tileSize)
+		y := float64((i / xCount) * wo.tileSize)
+		op.GeoM.Translate(x, y)
+		op.GeoM.Scale(float64(wo.scale), float64(wo.scale)) // Skaliert die 16x16 Tiles (auch die Position)
+
+		sx := (t % tileXCount) * wo.tileSize // x Koordinate der Kachel `t` im Style Sheet
+		sy := (t / tileXCount) * wo.tileSize // y Koordinate der Kachel `t` im Style Sheet
+		dst.DrawImage(tilesImage.SubImage(image.Rect(sx, sy, sx+wo.tileSize, sy+wo.tileSize)).(*ebiten.Image), op)
+		if wo.grid {
+			vector.StrokeRect(dst, float32(x)*wo.scale, float32(y)*wo.scale, float32(wo.tileSize)*wo.scale, float32(wo.tileSize)*wo.scale, 1, color.Gray{120}, false)
+
+			vector.StrokeRect(dst, (float32(x)+wo.coastMg)*wo.scale, (float32(y)+wo.coastMg)*wo.scale, (float32(wo.tileSize)-2*wo.coastMg)*wo.scale, (float32(wo.tileSize)-2*wo.coastMg)*wo.scale, 1, color.Gray{150}, false)
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////
+// Hilfsfunktionen:
+////////////////////////////////////////////////////////////////////////
+
+// Die Nummer der Kachel (für den Array mit den Kacheln) und true ist geliefert.
+// Wenn die Kachel nicht existiert, wird -1 und false zurückgegeben.
 func (wo *data) getTileNumber(tileX, tileY int) (int, bool) {
 	tileCount := tileX + (tileY * wo.numTileX)
 	if tileX >= wo.numTileX || tileY >= wo.numTileY || tileX < 0 || tileY < 0 {
@@ -249,22 +359,12 @@ func (wo *data) areNeighborsGround(tileX, tileY int, layer []int) (n, no, o, so,
 			+----+
 			  c     -> abcd
 */
+// Liefert den aktuellen Stand der gegebenen Nachbarn eines Kachels.
 func getState(a, b, c, d bool) int {
 	return boolToInt(a)*8 + boolToInt(b)*4 + boolToInt(c)*2 + boolToInt(d)*1
 }
 
-func (wo *data) Width() float32 {
-	return wo.width
-}
-
-func (wo *data) Height() float32 {
-	return wo.height
-}
-
-func (wo *data) Margin() float32 {
-	return wo.margin
-}
-
+// Liefert 1, wenn Argument 'true' ist, sonst 0.
 func boolToInt(bit bool) int {
 	var bitSetVar int
 	if bit {
@@ -273,50 +373,20 @@ func boolToInt(bit bool) int {
 	return bitSetVar
 }
 
-func (wo *data) setLayer(x, y int, l []int, value int) {
+// 
+func (wo *data) setTileInLayer(x, y int, l []int, value int) {
 	if t, ok := wo.getTileNumber(x, y); ok {
 		l[t] = value
 	}
 }
 
-func (wo *data) getLayer(x, y int, l []int) int {
+//
+func (wo *data) getTileFromLayer(x, y int, l []int) int {
 	if t, ok := wo.getTileNumber(x, y); ok {
 		return l[t]
 	} else {
 		return -1
 	}
-}
-
-func (wo *data) ToggleGround(mx, my int) {
-	tileX := mx / (int(wo.tileSize) * int(wo.scale))
-	tileY := my / (int(wo.tileSize) * int(wo.scale))
-
-	wo.toggle(tileX, tileY)
-
-	// Die Nachbarfelder aktualisieren
-	wo.toggle(tileX-1, tileY+1)
-	wo.toggle(tileX-1, tileY+1)
-
-	wo.toggle(tileX, tileY+1)
-	wo.toggle(tileX, tileY+1)
-
-	wo.toggle(tileX+1, tileY+1)
-	wo.toggle(tileX+1, tileY+1)
-
-	wo.toggle(tileX-1, tileY)
-	wo.toggle(tileX-1, tileY)
-
-	wo.toggle(tileX+1, tileY)
-	wo.toggle(tileX+1, tileY)
-
-	wo.toggle(tileX-1, tileY-1)
-	wo.toggle(tileX-1, tileY-1)
-
-	wo.toggle(tileX, tileY-1)
-	wo.toggle(tileX, tileY-1)
-
-	wo.toggle(tileX+1, tileY-1)
-	wo.toggle(tileX+1, tileY-1)
 }
 
 func (wo *data) toggle(tileX, tileY int) {
@@ -330,7 +400,7 @@ func (wo *data) toggle(tileX, tileY int) {
 
 	// Wenn die gewählte Kachel Wasser ist, dann die korrekte Landkachel wählen
 	tileType := -1 // keine Kachel
-	if wo.getLayer(tileX, tileY, wo.layers[1]) == -1 {
+	if wo.getTileFromLayer(tileX, tileY, wo.layers[1]) == -1 {
 		switch stateOrth {
 		case 0:
 			tileType = 46
@@ -447,57 +517,7 @@ func (wo *data) toggle(tileX, tileY int) {
 			}
 		}
 	}
-	wo.setLayer(tileX, tileY, wo.layers[1], tileType)
+	wo.setTileInLayer(tileX, tileY, wo.layers[1], tileType)
 	//fmt.Printf("tx,ty: %d,%d (%d) stateOrth: %d, stateDiag: %d \n", tileX, tileY, tileX+(tileY*numTileX), stateOrth, stateDiag)
-
 }
 
-func (wo *data) Draw(dst *ebiten.Image, c int) {
-	//dst.Fill(color.NRGBA{wo.r, wo.g, wo.b, wo.a})
-	//vector.StrokeRect(dst, wo.Margin, wo.Margin, wo.Width-2*wo.Margin, wo.Height-2*wo.Margin, 2, color.Gray{200}, true)
-
-	nW := waterImage.Bounds().Dx() // Gibt die Breite des Tilesheets
-	tileXCount := nW / wo.tileSize // Anzahl der Tiles in x Richtung im Tile Sheet (25)
-
-	xCount := int(wo.width/wo.scale) / wo.tileSize // Anzahl der Tiles in xRichtung im SCREEN
-
-	// ========  Layer 0 - Wasser =========
-	for i, t := range wo.layers[0] {
-
-		t = (c / 10) % 4 // Animationseffekt des Wassers
-		op := &ebiten.DrawImageOptions{}
-
-		// Ort, an den das aktuelle Tile hin geschoben werden soll
-		op.GeoM.Translate(float64((i%xCount)*wo.tileSize), float64((i/xCount)*wo.tileSize))
-		op.GeoM.Scale(float64(wo.scale), float64(wo.scale)) // Skaliert die 16x16 Tiles (auch die Position)
-
-		sx := (t % tileXCount) * wo.tileSize //
-		sy := (t / tileXCount) * wo.tileSize //
-		dst.DrawImage(waterImage.SubImage(image.Rect(sx, sy, sx+wo.tileSize, sy+wo.tileSize)).(*ebiten.Image), op)
-	}
-
-	// ========  Layer 1 - Land =========
-	nW = tilesImage.Bounds().Dx() // Gibt die Breite des Tilesheets
-	tileXCount = nW / wo.tileSize // Anzahl der Tiles in x Richtung im Tile Sheet (25)
-
-	xCount = int(wo.width/wo.scale) / wo.tileSize // Anzahl der Tiles in x Richtung im SCREEN
-	for i, t := range wo.layers[1] {
-		op := &ebiten.DrawImageOptions{}
-
-		// Ort, an den das aktuelle Tile hin geschoben werden soll (ohne Skalierung)
-		x := float64((i % xCount) * wo.tileSize)
-		y := float64((i / xCount) * wo.tileSize)
-		op.GeoM.Translate(x, y)
-		op.GeoM.Scale(float64(wo.scale), float64(wo.scale)) // Skaliert die 16x16 Tiles (auch die Position)
-
-		sx := (t % tileXCount) * wo.tileSize // x Koordinate der Kachel `t` im Style Sheet
-		sy := (t / tileXCount) * wo.tileSize // y Koordinate der Kachel `t` im Style Sheet
-		dst.DrawImage(tilesImage.SubImage(image.Rect(sx, sy, sx+wo.tileSize, sy+wo.tileSize)).(*ebiten.Image), op)
-		if wo.grid {
-			vector.StrokeRect(dst, float32(x)*wo.scale, float32(y)*wo.scale, float32(wo.tileSize)*wo.scale, float32(wo.tileSize)*wo.scale, 1, color.Gray{120}, false)
-
-			vector.StrokeRect(dst, (float32(x)+wo.coastMg)*wo.scale, (float32(y)+wo.coastMg)*wo.scale, (float32(wo.tileSize)-2*wo.coastMg)*wo.scale, (float32(wo.tileSize)-2*wo.coastMg)*wo.scale, 1, color.Gray{150}, false)
-		}
-	}
-
-}
