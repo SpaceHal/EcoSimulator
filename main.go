@@ -3,6 +3,7 @@ package main
 import (
 	"ecosim/animal"
 	"ecosim/world"
+	"ecosim/foxes"
 	"fmt"
 	"log"
 	"math/rand"
@@ -66,7 +67,8 @@ func (g *Game) Draw(dst *ebiten.Image) {
 	welt.Draw(dst, g.counter)
 
 	for _, b := range bunnies {
-		b.Draw(dst)
+		//b.Separate(bunnies[:])
+		b.Draw(dst, b.GetImage()) // Ein Jäger
 	}
 	// Text im Fenster
 	msg := fmt.Sprintf("TPS: %0.2f\nFPS: %0.2f", ebiten.ActualTPS(), ebiten.ActualFPS())
@@ -86,7 +88,7 @@ func main() {
 
 	bunnies = make([]animal.Animal, NumberOfBunnies)
 	for i := 0; i < NumberOfBunnies; i++ {
-		bunnies[i] = animal.New(&welt, (rand.Float64()/2+0.5)*screenWidth/2, (rand.Float64()/2+0.5)*screenHeight/2)
+		bunnies[i] = foxes.New(&welt, (rand.Float64()/2+0.5)*screenWidth/2, (rand.Float64()/2+0.5)*screenHeight/2)
 	}
 
 	ebiten.SetWindowSize(screenWidth, screenHeight)

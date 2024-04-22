@@ -33,7 +33,7 @@ type data struct {
 	energy       float64 // Lebensenergie zwischen 100 und 0 (0 sterben)
 	ageingNumber float64 // Reduziert die Lebensenergie (energy) pro update (ageingFactor <= 1.0)
 
-	img, imgDebug *ebiten.Image // das zu zeigende Bild
+	imgDebug *ebiten.Image // das zu zeigende Bild
 
 	w *world.World // Die Simulationswelt
 
@@ -82,8 +82,6 @@ func New(w *world.World, x, y float64) *data {
 	}
 	a.acc = vec{1, 1}.Unit().Scale(a.ahead / 8)
 	a.ageingNumber = 2 * a.energy / 60
-
-	a.makeAnimal() // erzeugt das Bild vom Tier
 
 	if a.debug {
 		size := math.Max(float64(a.imgHeight), float64(a.imgHeight))
@@ -277,14 +275,14 @@ func (a *data) SeeOthers(others []Animal) (seen []Animal, direction []vec) {
 	return seen, direction
 }
 
-func (a *data) Draw(screen *ebiten.Image) {
-	a.drawAnimal(screen)
+func (a *data) Draw(screen, img *ebiten.Image) {
+	a.drawAnimal(screen, img)
 }
 
 // Vor.: ?
 // Eff.: Zeichnet ein Tier als Vektorgrafik mit Sichtfeld und Geschwindigkeitsvektor
 // Erg.: ?
-func (a *data) drawAnimal(screen *ebiten.Image) {
+func (a *data) drawAnimal(screen, img *ebiten.Image) {
 	//halfImg := e.imgHeight / 2
 	if (*a.w).GetDebug() {
 		w := float32(a.imgDebug.Bounds().Dx())
@@ -325,8 +323,7 @@ func (a *data) drawAnimal(screen *ebiten.Image) {
 	op.GeoM.Translate(-float64(a.imgHeight)/2, -float64(a.imgHeight)/2) // Koordinaten zuerst in die Mitte des Bilder bewegen ...
 	op.GeoM.Translate(a.pos[0], a.pos[1])                               // ... und zum Schluss ein die gewünschte Stelle bewegen
 	op.Filter = ebiten.FilterLinear
-	screen.DrawImage(a.img, op)
-
+	screen.DrawImage(img, op)
 }
 
 // Vor.: ?
@@ -385,11 +382,14 @@ func (a *data) makeArc(img *ebiten.Image, radius float32, startAngle, endAngle f
 // Eff.: Erstellt ein Bild für ein Tier. Das Bild wird in animal.img gespeichert und
 // später mit Animal.DrawShape() jedes mal neu gezeichnet.
 // Erg.:
-func (a *data) makeAnimal() {
-	a.img = ebiten.NewImage(int(a.imgHeight), int(a.imgHeight))
-	vector.DrawFilledCircle(a.img, a.imgHeight/2, a.imgHeight/2, a.imgHeight/2, color.NRGBA{a.r, a.g, a.b, a.a}, true)
+func (a *data) GetImage() *ebiten.Image {
+	var img *ebiten.Image
+	img = ebiten.NewImage(int(a.imgHeight), int(a.imgHeight))
+	vector.DrawFilledCircle(img, a.imgHeight/2, a.imgHeight/2, a.imgHeight/2, color.NRGBA{a.r, a.g, a.b, a.a}, true)
+	return img
 }
 
+/*
 // Ein Dreieck als image
 func (a *data) createTriangle() {
 
@@ -436,3 +436,4 @@ func (a *data) createTriangle() {
 	a.img.DrawTriangles(vs, is, whiteSubImage, op)
 
 }
+*/
