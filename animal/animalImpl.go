@@ -1,4 +1,4 @@
-package eater
+package animal
 
 import (
 	"ecosim/world"
@@ -12,13 +12,9 @@ import (
 	//termC "github.com/fatih/color"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
-
-	ve "github.com/quartercastle/vector"
 )
 
-type vec = ve.Vector //  Vektoren
-
-type Animal struct {
+type data struct {
 	//dir                  float64 // Bewegungsrichtung
 	pos, vel, acc, z, z1 vec     // Position, Geschwindigkeit, Beschleunigung (temp Werte)
 	accBorder            float64 // Beschleunigung weg vom Rand
@@ -56,9 +52,9 @@ func init() {
 	whiteImage.Fill(color.White)
 }
 
-func New(world *world.World, x, y float64) *Animal {
+func New(w *world.World, x, y float64) *data {
 
-	e := &Animal{
+	e := &data{
 		imgWidth:  7,
 		imgHeight: 20,
 		r:         0xa0,
@@ -77,7 +73,7 @@ func New(world *world.World, x, y float64) *Animal {
 		viewAngle: math.Pi / 6,
 		viewMag:   80,
 		aa:        true,
-		w:         world,
+		w:         w,
 		debug:     true,
 	}
 	e.acc = vec{1, 1}.Unit().Scale(e.ahead / 8)
@@ -92,28 +88,36 @@ func New(world *world.World, x, y float64) *Animal {
 	return e
 }
 
-func (a *Animal) isOutside() bool {
-
-	return float32(a.pos.X()) >= a.w.Width-(2*a.imgWidth)-a.w.Margin ||
-		float32(a.pos.X()) <= 0+a.w.Margin ||
-		float32(a.pos.Y()) >= a.w.Height-(2*a.imgHeight)-a.w.Margin ||
-		float32(a.pos.Y()) <= 0+a.w.Margin
+func (a *data) isOutside() bool {
+	return float32(a.pos.X()) >= (*a.w).Width()-(2*a.imgWidth)-(*a.w).Margin() ||
+		float32(a.pos.X()) <= 0+(*a.w).Margin() ||
+		float32(a.pos.Y()) >= (*a.w).Height()-(2*a.imgHeight)-(*a.w).Margin() ||
+		float32(a.pos.Y()) <= 0+(*a.w).Margin()
 }
 
 // Die neue Position e.pos aus e.vel und e.acc bestimmen.
-func (a *Animal) Update(others []*Animal) {
+func (a *data) Update(others []Animal) {
 	a.randomStep()
 	a.repelAtBorder()
-	a.avoidCollisionWithSeenObjekts(others)
+	a.avoidCollisionWithSeenObjects(others)
 	a.applyMove(others)
 
+}
+
+// Liefert die aktuelle Position
+func (a *data) GetPosition() vec {
+	return a.pos
+}
+
+func (a *data) IsSame(b *data) bool {
+	return a == b
 }
 
 // Vor.:
 // Eff.: Die neue Position animal.pos ist bestimmt. Das Überlappen von
 // Objekten wird vermieden
 // Erg.:
-func (a *Animal) applyMove(others []*Animal) {
+func (a *data) applyMove(others []Animal) {
 	//a.vel.Unit().Scale(a.maxVel)
 	//a.pos = a.pos.Add(a.vel)
 	newPos := a.pos.Add(a.vel)
@@ -122,8 +126,8 @@ func (a *Animal) applyMove(others []*Animal) {
 	sumDiff := vec{0, 0}
 	var counts float64
 	for _, other := range others {
-		dist := newPos.Sub(other.pos)
-		if a != other && dist.Magnitude() <= float64(a.imgHeight*1.1) {
+		dist := newPos.Sub(other.GetPosition())
+		if !other.IsSame(a) && dist.Magnitude() <= float64(a.imgHeight*1.1) {
 
 			collission = collission || true
 			// Einfaches Separieren
@@ -147,16 +151,16 @@ func (a *Animal) applyMove(others []*Animal) {
 	//a.makeAnimal()
 
 	// Grenzen der Welt beachten
-	if float32(a.pos[0]) >= a.w.Width-a.w.Margin {
-		a.pos[0] = float64(a.w.Width - a.w.Margin)
-	} else if float32(a.pos.X()) <= a.w.Margin {
-		a.pos[0] = float64(a.w.Margin)
+	if float32(a.pos[0]) >= (*a.w).Width()-(*a.w).Margin() {
+		a.pos[0] = float64((*a.w).Width() - (*a.w).Margin())
+	} else if float32(a.pos.X()) <= (*a.w).Margin() {
+		a.pos[0] = float64((*a.w).Margin())
 	}
 
-	if float32(a.pos.Y()) >= a.w.Height-a.w.Margin {
-		a.pos[1] = float64(a.w.Height - a.w.Margin)
-	} else if float32(a.pos.Y()) <= a.w.Margin {
-		a.pos[1] = float64(a.w.Margin)
+	if float32(a.pos.Y()) >= (*a.w).Height()-(*a.w).Margin() {
+		a.pos[1] = float64((*a.w).Height() - (*a.w).Margin())
+	} else if float32(a.pos.Y()) <= (*a.w).Margin() {
+		a.pos[1] = float64((*a.w).Margin())
 	}
 
 }
@@ -164,7 +168,7 @@ func (a *Animal) applyMove(others []*Animal) {
 // Vor.: ?
 // Eff.: Bestimmt den Geschwindigkeitsvektor Animal.vel
 // Erg.:
-func (a *Animal) randomStep() {
+func (a *data) randomStep() {
 
 	// Ein Vektor, kurz vor das Objekt zeigend, ist der Punkt, an dem gezogen wird.
 	z := a.vel.Unit().Scale(a.ahead)
@@ -189,14 +193,14 @@ func (a *Animal) randomStep() {
 	a.vel = a.vel.Unit().Scale(a.maxVel).Add(z)
 }
 
-func (a *Animal) isAtWater() bool {
+func (a *data) isAtWater() bool {
 	return a.atWater
 }
 
 // Vor.:
 // Eff.: Stößt das Objekt von der Wand ab
 // Erg.:
-func (a *Animal) repelAtBorder() {
+func (a *data) repelAtBorder() {
 	// Wenn das Objekt in die Nähe des Bildschirmrandes kommt,
 	// wird es senkrecht dazu beschleunigt (dreht also um)
 	// TODO: Die Beschleunigung vom Rand weg sollte Proportional zur Entfernung zum Rand sein.
@@ -206,18 +210,18 @@ func (a *Animal) repelAtBorder() {
 	repel := vec{0, 0}
 	const d = 6
 	a.atWater = false
-	if float32(a.pos.X()) >= a.w.Width-(a.w.Margin+d) {
+	if float32(a.pos.X()) >= (*a.w).Width()-((*a.w).Margin()+d) {
 		repel[0] = -a.accBorder
 		a.atWater = true
-	} else if float32(a.pos.X()) <= a.w.Margin+d {
+	} else if float32(a.pos.X()) <= (*a.w).Margin()+d {
 		repel[0] = a.accBorder
 		a.atWater = true
 	}
 
-	if float32(a.pos.Y()) >= a.w.Height-(a.w.Margin+d) {
+	if float32(a.pos.Y()) >= (*a.w).Height()-((*a.w).Margin()+d) {
 		repel[1] = -a.accBorder
 		a.atWater = true
-	} else if float32(a.pos.Y()) <= a.w.Margin+d {
+	} else if float32(a.pos.Y()) <= (*a.w).Margin()+d {
 		repel[1] = a.accBorder
 		a.atWater = true
 	}
@@ -227,7 +231,7 @@ func (a *Animal) repelAtBorder() {
 // Vor.:
 // Eff.: Das Objekt beschleunigt von anderen Objekten, die im Sichtfeld liegen weg
 // Erg.:
-func (a *Animal) avoidCollisionWithSeenObjekts(others []*Animal) {
+func (a *data) avoidCollisionWithSeenObjects(others []Animal) {
 	avg := vec{0, 0}
 
 	_, dirs := a.SeeOthers(others)
@@ -250,15 +254,15 @@ func (a *Animal) avoidCollisionWithSeenObjekts(others []*Animal) {
 // Eff.: ?
 // Erg.: Splice mit Objekten (seen) und deren Abstandsvektoren (direction),
 // die im Sichtfeld des Objekts liegen
-func (a *Animal) SeeOthers(others []*Animal) (seen []*Animal, direction []vec) {
+func (a *data) SeeOthers(others []Animal) (seen []Animal, direction []vec) {
 	inView := false
 	for _, other := range others {
-		delta := other.pos.Sub(a.pos)
-		if a != other && delta.Magnitude() < a.viewMag {
+		delta := other.GetPosition().Sub(a.pos)
+		if !other.IsSame(a) && delta.Magnitude() < a.viewMag {
 
 			if math.Abs(a.vel.Angle(delta)) < a.viewAngle {
 				inView = inView || true
-				seen = append(seen, a)
+				seen = append(seen, other)
 				direction = append(direction, delta.Clone())
 			}
 		} else {
@@ -269,16 +273,16 @@ func (a *Animal) SeeOthers(others []*Animal) (seen []*Animal, direction []vec) {
 	return seen, direction
 }
 
-func (a *Animal) Draw(screen *ebiten.Image) {
+func (a *data) Draw(screen *ebiten.Image) {
 	a.drawAnimal(screen)
 }
 
 // Vor.: ?
 // Eff.: Zeichnet ein Tier als Vektorgrafik mit Sichtfeld und Geschwindigkeitsvektor
 // Erg.: ?
-func (a *Animal) drawAnimal(screen *ebiten.Image) {
+func (a *data) drawAnimal(screen *ebiten.Image) {
 	//halfImg := e.imgHeight / 2
-	if a.w.GetDebug() {
+	if (*a.w).GetDebug() {
 		w := float32(a.imgDebug.Bounds().Dx())
 		h := float32(a.imgDebug.Bounds().Dy())
 		a.imgDebug.Clear()
@@ -324,7 +328,7 @@ func (a *Animal) drawAnimal(screen *ebiten.Image) {
 // Vor.: ?
 // Eff.: Ein Kreisbogen wird erzeugt, dessen Mittelpunkt mittig in `img` gespeichert wird.
 // Erg.:
-func (a *Animal) makeArc(img *ebiten.Image, radius float32, startAngle, endAngle float32, c color.NRGBA, line bool) {
+func (a *data) makeArc(img *ebiten.Image, radius float32, startAngle, endAngle float32, c color.NRGBA, line bool) {
 	w := float32(img.Bounds().Dx())
 	h := float32(img.Bounds().Dy())
 
@@ -377,13 +381,13 @@ func (a *Animal) makeArc(img *ebiten.Image, radius float32, startAngle, endAngle
 // Eff.: Erstellt ein Bild für ein Tier. Das Bild wird in animal.img gespeichert und
 // später mit Animal.DrawShape() jedes mal neu gezeichnet.
 // Erg.:
-func (a *Animal) makeAnimal() {
+func (a *data) makeAnimal() {
 	a.img = ebiten.NewImage(int(a.imgHeight), int(a.imgHeight))
 	vector.DrawFilledCircle(a.img, a.imgHeight/2, a.imgHeight/2, a.imgHeight/2, color.NRGBA{a.r, a.g, a.b, a.a}, true)
 }
 
 // Ein Dreieck als image
-func (a *Animal) createTriangle() {
+func (a *data) createTriangle() {
 
 	var path vector.Path
 

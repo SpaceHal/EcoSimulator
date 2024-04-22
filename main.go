@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	bunnies    [20]*eater.Animal
-	welt       *world.World
+	bunnies    [20]animal.Animal
+	welt       world.World
 	tilesImage *ebiten.Image
 	waterImage *ebiten.Image
 )
@@ -38,12 +38,12 @@ func (g *Game) Update() error {
 
 	// Kachel-Gitter anzeigen
 	if inpututil.IsKeyJustPressed(ebiten.KeyG) {
-		welt.Grid()
+		welt.ToggleGrid()
 	}
 
 	// Kachel-Gitter anzeigen
 	if inpututil.IsKeyJustPressed(ebiten.KeyD) {
-		welt.Debug()
+		welt.ToggleDebug()
 	}
 
 	// Mausposition einlesen
@@ -84,7 +84,7 @@ func main() {
 	welt = world.New(screenWidth, screenHeight, tilesImage)
 
 	for i := 0; i < len(bunnies); i++ {
-		bunnies[i] = eater.New(welt, rand.Float64()*screenWidth, rand.Float64()*screenWidth)
+		bunnies[i] = animal.New(&welt, rand.Float64()*screenWidth, rand.Float64()*screenWidth)
 	}
 
 	ebiten.SetWindowSize(screenWidth, screenHeight)
