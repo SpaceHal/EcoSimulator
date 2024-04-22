@@ -84,7 +84,7 @@ func main() {
 	welt = world.New(screenWidth, screenHeight, tilesImage)
 
 	for i := 0; i < len(bunnies); i++ {
-		bunnies[i] = animal.New(&welt, rand.Float64()*screenWidth, rand.Float64()*screenWidth)
+		bunnies[i] = animal.New(&welt, (rand.Float64()/2+0.5)*screenWidth/2, (rand.Float64()/2+0.5)*screenHeight/2)
 	}
 
 	ebiten.SetWindowSize(screenWidth, screenHeight)
