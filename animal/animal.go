@@ -12,7 +12,7 @@ import (
 type vec = ve.Vector //  Vektoren
 
 // Vor.: -
-// Erg.: ein neuer Tier 
+// Erg.: ein neues Tier 
 // New (w world.World, x, y float64) *data // *data erfüllt das Interface World 
 
 type Animal interface {

@@ -32,7 +32,7 @@ type data struct {
 
 	img, imgDebug *ebiten.Image // das zu zeigende Bild
 
-	w world.World // Die Simulationswelt
+	w *world.World // Die Simulationswelt
 
 	r, g, b, a          uint8   // Farbe rot, grün, blau, alpha des Objekts
 	imgWidth, imgHeight float32 // Größe des Tierbilds
@@ -52,7 +52,7 @@ func init() {
 	whiteImage.Fill(color.White)
 }
 
-func New(w world.World, x, y float64) *data {
+func New(w *world.World, x, y float64) *data {
 
 	e := &data{
 		imgWidth:  7,
@@ -89,10 +89,10 @@ func New(w world.World, x, y float64) *data {
 }
 
 func (a *data) isOutside() bool {
-	return float32(a.pos.X()) >= a.w.Width()-(2*a.imgWidth)-a.w.Margin() ||
-		float32(a.pos.X()) <= 0+a.w.Margin() ||
-		float32(a.pos.Y()) >= a.w.Height()-(2*a.imgHeight)-a.w.Margin() ||
-		float32(a.pos.Y()) <= 0+a.w.Margin()
+	return float32(a.pos.X()) >= (*a.w).Width()-(2*a.imgWidth)-(*a.w).Margin() ||
+		float32(a.pos.X()) <= 0+(*a.w).Margin() ||
+		float32(a.pos.Y()) >= (*a.w).Height()-(2*a.imgHeight)-(*a.w).Margin() ||
+		float32(a.pos.Y()) <= 0+(*a.w).Margin()
 }
 
 // Die neue Position e.pos aus e.vel und e.acc bestimmen.
@@ -151,16 +151,16 @@ func (a *data) applyMove(others []Animal) {
 	//a.makeAnimal()
 
 	// Grenzen der Welt beachten
-	if float32(a.pos[0]) >= a.w.Width()-a.w.Margin() {
-		a.pos[0] = float64(a.w.Width() - a.w.Margin())
-	} else if float32(a.pos.X()) <= a.w.Margin() {
-		a.pos[0] = float64(a.w.Margin())
+	if float32(a.pos[0]) >= (*a.w).Width()-(*a.w).Margin() {
+		a.pos[0] = float64((*a.w).Width() - (*a.w).Margin())
+	} else if float32(a.pos.X()) <= (*a.w).Margin() {
+		a.pos[0] = float64((*a.w).Margin())
 	}
 
-	if float32(a.pos.Y()) >= a.w.Height()-a.w.Margin() {
-		a.pos[1] = float64(a.w.Height() - a.w.Margin())
-	} else if float32(a.pos.Y()) <= a.w.Margin() {
-		a.pos[1] = float64(a.w.Margin())
+	if float32(a.pos.Y()) >= (*a.w).Height()-(*a.w).Margin() {
+		a.pos[1] = float64((*a.w).Height() - (*a.w).Margin())
+	} else if float32(a.pos.Y()) <= (*a.w).Margin() {
+		a.pos[1] = float64((*a.w).Margin())
 	}
 
 }
@@ -210,18 +210,18 @@ func (a *data) repelAtBorder() {
 	repel := vec{0, 0}
 	const d = 6
 	a.atWater = false
-	if float32(a.pos.X()) >= a.w.Width()-(a.w.Margin()+d) {
+	if float32(a.pos.X()) >= (*a.w).Width()-((*a.w).Margin()+d) {
 		repel[0] = -a.accBorder
 		a.atWater = true
-	} else if float32(a.pos.X()) <= a.w.Margin()+d {
+	} else if float32(a.pos.X()) <= (*a.w).Margin()+d {
 		repel[0] = a.accBorder
 		a.atWater = true
 	}
 
-	if float32(a.pos.Y()) >= a.w.Height()-(a.w.Margin()+d) {
+	if float32(a.pos.Y()) >= (*a.w).Height()-((*a.w).Margin()+d) {
 		repel[1] = -a.accBorder
 		a.atWater = true
-	} else if float32(a.pos.Y()) <= a.w.Margin()+d {
+	} else if float32(a.pos.Y()) <= (*a.w).Margin()+d {
 		repel[1] = a.accBorder
 		a.atWater = true
 	}
@@ -282,7 +282,7 @@ func (a *data) Draw(screen *ebiten.Image) {
 // Erg.: ?
 func (a *data) drawAnimal(screen *ebiten.Image) {
 	//halfImg := e.imgHeight / 2
-	if a.w.GetDebug() {
+	if (*a.w).GetDebug() {
 		w := float32(a.imgDebug.Bounds().Dx())
 		h := float32(a.imgDebug.Bounds().Dy())
 		a.imgDebug.Clear()
