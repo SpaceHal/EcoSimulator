@@ -4,15 +4,14 @@ import (
 	"ecosim/animal";
 	"ecosim/world";
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"fmt")
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil")
 
 type data struct {
 	animal.Animal
 }
 
 func New(w *world.World, x, y float64) *data {
-var f *data
+	var f *data
 	f = new(data)
 	(*f).Animal = animal.New(w,x,y)
 	return f
@@ -20,7 +19,10 @@ var f *data
 
 func (f *data) GetImage () *ebiten.Image {
 	var img *ebiten.Image
-	img, _, _ = ebitenutil.NewImageFromFile("foxes/fox.png")
-	fmt.Println("test")
+	var err error
+	img, _, err = ebitenutil.NewImageFromFile("foxes/fox.png")
+	if err != nil {
+		return (*f).Animal.GetImage()
+	}
 	return img
 }
