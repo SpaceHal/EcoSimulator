@@ -31,14 +31,9 @@ type Animal interface {
 	SeeOthers(others []Animal) (seen []Animal, direction []vec)
 
 	// Vor.: -
-	// Eff.: - 
-	// Erg.: Liefert das zu zeigenden Bild
-	GetImage() *ebiten.Image
-	
-	// Vor.: -
 	// Eff.: Das Tier ist gezeichnet.
 	// Erg.: -
-	Draw(screen, img *ebiten.Image)
+	Draw(screen *ebiten.Image)
 
 	// Vor.: -
 	// Eff.: -

@@ -13,16 +13,13 @@ type data struct {
 func New(w *world.World, x, y float64) *data {
 	var f *data
 	f = new(data)
-	(*f).Animal = animal.New(w,x,y)
+	(*f).Animal = animal.NewWithInheritance(w,x,y,f.makeAnimal())
 	return f
 }
 
-func (f *data) GetImage () *ebiten.Image {
+func (f *data) makeAnimal() *ebiten.Image {
 	var img *ebiten.Image
-	var err error
-	img, _, err = ebitenutil.NewImageFromFile("rabbits/rabbit.png")
-	if err != nil {
-		return (*f).Animal.GetImage()
-	}
+	img, _, _ = ebitenutil.NewImageFromFile("rabbits/rabbit.png")
 	return img
 }
+

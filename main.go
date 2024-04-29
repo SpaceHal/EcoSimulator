@@ -76,11 +76,11 @@ func (g *Game) Draw(dst *ebiten.Image) {
 
 	for _, b := range bunnies {
 		//b.Separate(bunnies[:])
-		b.Draw(dst, b.GetImage()) // Eine Beute
+		b.Draw(dst) // Eine Beute
 	}
 	
 	for _,f := range fuechse {
-		f.Draw(dst, f.GetImage()) // Ein Jäger
+		f.Draw(dst) // Ein Jäger
 	}
 	
 	// Text im Fenster
