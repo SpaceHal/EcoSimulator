@@ -80,7 +80,7 @@ func New(w *world.World, x, y float64) *data {
 		debug:     true,
 	}
 	a.acc = vec{1, 1}.Unit().Scale(a.ahead / 8)
-	a.ageingNumber = 2 * a.energy / 60
+	a.ageingNumber = a.energy / ((rand.Float64()*20 + 10) * 60)
 
 	a.makeAnimal()
 	
