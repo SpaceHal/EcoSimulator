@@ -4,6 +4,7 @@ import (
 	"ecosim/animal"
 	"ecosim/world"
 	"ecosim/foxes"
+	"ecosim/rabbits"
 	"fmt"
 	"log"
 	"math/rand"
@@ -100,7 +101,7 @@ func main() {
 
 	bunnies = make([]animal.Animal, NumberOfBunnies)
 	for i := 0; i < NumberOfBunnies; i++ {
-		bunnies[i] = animal.New(&welt, (rand.Float64()/2+0.5)*screenWidth/2, (rand.Float64()/2+0.5)*screenHeight/2)
+		bunnies[i] = rabbits.New(&welt, (rand.Float64()/2+0.5)*screenWidth/2, (rand.Float64()/2+0.5)*screenHeight/2)
 	}
 	
 	fuechse = make([]animal.Animal, NumberOfFoxes)
