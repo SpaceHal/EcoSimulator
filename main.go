@@ -38,6 +38,10 @@ type Game struct {
 	//line bool
 }
 
+func randBetween(a, b float64) float64 {
+	return a + rand.Float64()*b
+}
+
 func (g *Game) Update() error {
 	g.counter++
 
@@ -63,13 +67,13 @@ func (g *Game) Update() error {
 		if !bunnies[i].IsAlive() {
 			bunnies = append(bunnies[:i], bunnies[i+1:]...)
 			eoa--
-			fmt.Println("Ein Hase an Altersschwäche gestorben.", eoa, "leben noch.")
+			fmt.Println("Ein Hase ist gestorben.", eoa, "leben noch.")
 		}
 	}
 
 	for _, b := range bunnies {
 		//b.SeeOthers(bunnies[:])
-		b.Update(bunnies) // Position neu bestimmen
+		b.Update(&bunnies) // Position neu bestimmen
 	}
 
 	// Alle toten Füchse löschen ...
@@ -78,11 +82,11 @@ func (g *Game) Update() error {
 		if !fuechse[i].IsAlive() {
 			fuechse = append(fuechse[:i], fuechse[i+1:]...)
 			eoa--
-			fmt.Println("Ein Fuchs is an Altersschwäche gestorben.", eoa, "leben noch.")
+			fmt.Println("Ein Fuchs ist gestorben.", eoa, "leben noch.")
 		}
 	}
 	for _, f := range fuechse {
-		f.Update(fuechse) // Position neu bestimmen
+		f.Update(&fuechse) // Position neu bestimmen
 	}
 
 	return nil
@@ -119,12 +123,12 @@ func main() {
 
 	bunnies = make([]animal.Animal, NumberOfBunnies)
 	for i := 0; i < NumberOfBunnies; i++ {
-		bunnies[i] = rabbits.New(&welt, (rand.Float64()/2+0.5)*screenWidth/2, (rand.Float64()/2+0.5)*screenHeight/2)
+		bunnies[i] = rabbits.New(&welt, randBetween(40, screenWidth-40), randBetween(40, screenHeight-40))
 	}
 
 	fuechse = make([]animal.Animal, NumberOfFoxes)
 	for i := 0; i < NumberOfFoxes; i++ {
-		fuechse[i] = foxes.New(&welt, (rand.Float64()/2+0.5)*screenWidth/2, (rand.Float64()/2+0.5)*screenHeight/2)
+		fuechse[i] = foxes.New(&welt, (rand.Float64()/2+0.5)*screenWidth/2, (rand.Float64()/2+0.5)*screenHeight/2, &bunnies)
 	}
 
 	ebiten.SetWindowSize(screenWidth, screenHeight)

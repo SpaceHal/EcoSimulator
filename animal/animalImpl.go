@@ -2,6 +2,7 @@ package animal
 
 import (
 	"ecosim/world"
+	"fmt"
 
 	"image"
 	"image/color"
@@ -29,10 +30,12 @@ type data struct {
 	inView    bool    // wenn etwas im Sichtfeld ist
 	atWater   bool    // wenn das Objekt am sich am Wasser befindet
 
-	energy       float64 // Lebensenergie zwischen 100 und 0 (0 sterben)
-	ageingNumber float64 // Reduziert die Lebensenergie (energy) pro update (ageingFactor <= 1.0)
+	energy     float64 // Lebensenergie zwischen 100 und 0 (0 sterben)
+	energyLoss float64 // Reduziert die Lebensenergie (energy) pro update (ageingFactor <= 1.0)
 
-	img,imgDebug *ebiten.Image // das zu zeigende Bild
+	preys, predators *[]Animal // Die Beute oder die Jäger des Tiers
+
+	img, imgDebug *ebiten.Image // das zu zeigende Bild
 
 	w *world.World // Die Simulationswelt
 
@@ -80,10 +83,10 @@ func New(w *world.World, x, y float64) *data {
 		debug:     true,
 	}
 	a.acc = vec{1, 1}.Unit().Scale(a.ahead / 8)
-	a.ageingNumber = a.energy / ((rand.Float64()*20 + 10) * 60)
+	a.energyLoss = a.energy / ((rand.Float64()*20 + 10) * 60)
 
 	a.makeAnimal()
-	
+
 	if a.debug {
 		size := math.Max(float64(a.imgHeight), float64(a.imgHeight))
 		a.imgDebug = ebiten.NewImage(int(20*size), int(20*size))
@@ -92,22 +95,48 @@ func New(w *world.World, x, y float64) *data {
 	return a
 }
 
-func (a *data) IsAlive() bool {
-	return a.energy >= 0
+func (a *data) SetImage(img *ebiten.Image) {
+	a.img = img
 }
 
-func NewWithInheritance(w *world.World, x, y float64, img *ebiten.Image) *data {
-	a := New(w,x,y)
-	if img != nil {
-		(*a).img = img
-	}
-	return a
+func (a *data) IsAlive() bool {
+	return a.energy > 0
+}
+
+func (a *data) SetEnergyLoss(e float64) {
+	a.energyLoss = a.energy / e
+}
+func (a *data) SetEnergy(e float64) {
+	a.energy = e
+}
+
+func (a *data) SetPreys(preys *[]Animal) {
+	a.preys = preys
+}
+
+func (a *data) SetColorRGB(r, g, b uint8) {
+	a.r = r
+	a.g = g
+	a.b = b
+	a.makeAnimal()
+}
+
+func (a *data) SetMaxVel(v float64) {
+	a.maxVel = v
+}
+
+func (a *data) SetViewMag(mag float64) {
+	a.viewMag = mag
 }
 
 // Die neue Position e.pos aus e.vel und e.acc bestimmen und die Lebensenergie aktualisieren
-func (a *data) Update(others []Animal) {
-	a.energy -= a.ageingNumber
+func (a *data) Update(others *[]Animal) {
+	a.energy -= a.energyLoss
 	a.randomStep()
+	if a.preys != nil {
+		a.huntAnimals(a.preys)
+		a.eatAnimals(a.preys)
+	}
 	a.avoidCollisionWithSeenObjects(others)
 	a.repelFromWater()
 	a.applyMove(others)
@@ -127,13 +156,13 @@ func (a *data) IsSame(b *data) bool {
 // Eff.: Die neue Position animal.pos ist bestimmt. Das Überlappen von
 // Objekten wird vermieden
 // Erg.:
-func (a *data) applyMove(others []Animal) {
+func (a *data) applyMove(others *[]Animal) {
 	newPos := a.pos.Add(a.vel)
 
 	collision := false
 	sumDiff := vec{0, 0}
 	var counts float64
-	for _, other := range others {
+	for _, other := range *others {
 		dist := newPos.Sub(other.GetPosition())
 		if !other.IsSame(a) && dist.Magnitude() <= float64(a.imgHeight*1.1) {
 
@@ -191,20 +220,57 @@ func (a *data) isAtWater() bool {
 	return a.atWater
 }
 
-func (a *data) avoidCollisionWithSeenObjects(others []Animal) {
+func (a *data) avoidCollisionWithSeenObjects(others *[]Animal) {
 	avg := vec{0, 0}
 	_, dirs := a.SeeOthers(others)
-	for _, dir := range dirs {
+	for _, dir := range *dirs {
 		dir = dir.Unit()
 		dir = dir.Scale(a.viewMag - dir.Magnitude())
 		avg = avg.Add(dir)
 	}
-	if len(dirs) > 0 {
-		avg.Scale(1 / float64(len(dirs)))
+	if len(*dirs) > 0 {
+		avg.Scale(1 / float64(len(*dirs)))
 	}
 	z := a.vel.Unit().Scale(a.ahead)
 	z = z.Add(avg.Unit().Scale(-1))
 	a.vel = a.vel.Unit().Scale(a.maxVel).Add(z)
+}
+
+// Vor.:
+// Eff.: Bewegt sich in Richtung des nächsten im Sichtfeld gelegenen Tiers
+// Erg.:
+
+func (a *data) huntAnimals(others *[]Animal) {
+	if others == nil {
+		return
+	}
+
+	seenAnimals, directions := a.SeeOthers(others)
+	iClosest := 0
+	for i := 0; i < len(*seenAnimals); i++ {
+		if (*directions)[i].Magnitude() < (*directions)[iClosest].Magnitude() {
+			iClosest = i
+		}
+	}
+
+	if len(*seenAnimals) > 0 {
+		huntDir := (*directions)[iClosest].Unit()
+		huntDir = huntDir.Scale(a.maxAccPhi * 10)
+		z := a.vel.Unit().Scale(a.ahead)
+		z = z.Add(huntDir)
+		a.vel = a.vel.Unit().Scale(a.maxVel).Add(z)
+	}
+}
+
+func (a *data) eatAnimals(others *[]Animal) {
+	newPos := a.pos.Add(a.vel)
+	for _, other := range *others {
+		dist := newPos.Sub(other.GetPosition())
+		if !other.IsSame(a) && dist.Magnitude() <= float64(a.imgHeight*1.0) {
+			other.SetEnergy(0)
+			fmt.Println(" >> Einer wurde gegessen << ")
+		}
+	}
 }
 
 // Vor.:
@@ -265,9 +331,12 @@ func (a *data) repelFromWater() {
 // Eff.: ?
 // Erg.: Splice mit Objekten (seen) und deren Abstandsvektoren (direction),
 // die im Sichtfeld des Objekts liegen
-func (a *data) SeeOthers(others []Animal) (seen []Animal, direction []vec) {
+func (a *data) SeeOthers(others *[]Animal) (*[]Animal, *[]vec) {
 	inView := false
-	for _, other := range others {
+	var seen []Animal
+	var direction []vec
+
+	for _, other := range *others {
 		delta := other.GetPosition().Sub(a.pos)
 		if !other.IsSame(a) && delta.Magnitude() < a.viewMag {
 
@@ -281,7 +350,7 @@ func (a *data) SeeOthers(others []Animal) (seen []Animal, direction []vec) {
 		}
 	}
 	a.inView = inView
-	return seen, direction
+	return &seen, &direction
 }
 
 func (a *data) Draw(screen *ebiten.Image) {
@@ -300,11 +369,11 @@ func (a *data) drawAnimal(screen *ebiten.Image) {
 
 		// --- Rahmen ---
 		/*
-			vector.StrokeRect(e.imgDebug, 1, 1, w-1, h-1, 1, color.Gray{100}, false)
+			vector.StrokeRect(a.imgDebug, 1, 1, w-1, h-1, 1, color.Gray{100}, false)
 			opRect := &ebiten.DrawImageOptions{}
-			opRect.GeoM.Translate(e.pos[0]+float64(-w/2), e.pos[1]-float64(h/2)) // ... und zum Schluss ein die gewünschte Stelle bewegen
-			screen.DrawImage(e.imgDebug, opRect)
-			e.imgDebug.Clear()
+			opRect.GeoM.Translate(a.pos[0]+float64(-w/2), a.pos[1]-float64(h/2)) // ... und zum Schluss ein die gewünschte Stelle bewegen
+			screen.DrawImage(a.imgDebug, opRect)
+			a.imgDebug.Clear()
 		*/
 
 		// --- Geschwindigkeit ---
@@ -319,11 +388,11 @@ func (a *data) drawAnimal(screen *ebiten.Image) {
 			viewColor = color.NRGBA{150, 100, 180, 80}
 		}
 		a.makeArc(a.imgDebug, float32(a.viewMag), float32(-math.Pi/2-a.viewAngle), float32(-math.Pi/2+a.viewAngle), viewColor, false)
-
 		// --- Transformation ---
 		opD.GeoM.Translate(float64(-w/2), -float64(h/2)) // Koordinaten zuerst in die Mitte des Bilder bewegen ...
 		opD.GeoM.Rotate(-dirAngle)                       // ... dann drehen ...
 		opD.GeoM.Translate(a.pos[0], a.pos[1])           // ... und zum Schluss ein die gewünschte Stelle bewegen
+
 		screen.DrawImage(a.imgDebug, opD)
 
 	}
@@ -384,14 +453,14 @@ func (a *data) makeArc(img *ebiten.Image, radius float32, startAngle, endAngle f
 		op.FillRule = ebiten.EvenOdd
 	}
 
-	a.img.DrawTriangles(vs, is, whiteSubImage, op)
+	img.DrawTriangles(vs, is, whiteSubImage, op)
 }
 
 // Vor.: ?
 // Eff.: Erstellt ein Bild für ein Tier. Das Bild wird in animal.img gespeichert und
 // später mit Animal.DrawShape() jedes mal neu gezeichnet.
 // Erg.:
-func (a *data) makeAnimal()  {
+func (a *data) makeAnimal() {
 	a.img = ebiten.NewImage(int(a.imgHeight), int(a.imgHeight))
 	vector.DrawFilledCircle(a.img, a.imgHeight/2, a.imgHeight/2, a.imgHeight/2, color.NRGBA{a.r, a.g, a.b, a.a}, true)
 }
