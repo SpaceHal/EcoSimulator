@@ -30,6 +30,9 @@ type data struct {
 	inView    bool    // wenn etwas im Sichtfeld ist
 	atWater   bool    // wenn das Objekt am sich am Wasser befindet
 
+	energy       float64 // Lebensenergie zwischen 100 und 0 (0 sterben)
+	ageingNumber float64 // Reduziert die Lebensenergie (energy) pro update (ageingFactor <= 1.0)
+
 	img, imgDebug *ebiten.Image // das zu zeigende Bild
 
 	w *world.World // Die Simulationswelt
@@ -54,7 +57,7 @@ func init() {
 
 func New(w *world.World, x, y float64) *data {
 
-	e := &data{
+	a := &data{
 		imgWidth:  7,
 		imgHeight: 20,
 		r:         0xa0,
@@ -72,31 +75,31 @@ func New(w *world.World, x, y float64) *data {
 		eps:       0.1,
 		viewAngle: math.Pi / 6,
 		viewMag:   80,
+		energy:    100,
 		aa:        true,
 		w:         w,
 		debug:     true,
 	}
-	e.acc = vec{1, 1}.Unit().Scale(e.ahead / 8)
+	a.acc = vec{1, 1}.Unit().Scale(a.ahead / 8)
+	a.ageingNumber = 2 * a.energy / 60
 
-	e.makeAnimal() // erzeugt das Bild vom Tier
+	a.makeAnimal() // erzeugt das Bild vom Tier
 
-	if e.debug {
-		size := math.Max(float64(e.imgHeight), float64(e.imgHeight))
-		e.imgDebug = ebiten.NewImage(int(20*size), int(20*size))
+	if a.debug {
+		size := math.Max(float64(a.imgHeight), float64(a.imgHeight))
+		a.imgDebug = ebiten.NewImage(int(20*size), int(20*size))
 	}
 
-	return e
+	return a
 }
 
-func (a *data) isOutside() bool {
-	return float32(a.pos.X()) >= (*a.w).Width()-(2*a.imgWidth)-(*a.w).Margin() ||
-		float32(a.pos.X()) <= 0+(*a.w).Margin() ||
-		float32(a.pos.Y()) >= (*a.w).Height()-(2*a.imgHeight)-(*a.w).Margin() ||
-		float32(a.pos.Y()) <= 0+(*a.w).Margin()
+func (a *data) IsAlive() bool {
+	return a.energy >= 0
 }
 
-// Die neue Position e.pos aus e.vel und e.acc bestimmen.
+// Die neue Position e.pos aus e.vel und e.acc bestimmen und die Lebensenergie aktualisieren
 func (a *data) Update(others []Animal) {
+	a.energy -= a.ageingNumber
 	a.randomStep()
 	a.avoidCollisionWithSeenObjects(others)
 	a.repelFromWater()
@@ -118,18 +121,16 @@ func (a *data) IsSame(b *data) bool {
 // Objekten wird vermieden
 // Erg.:
 func (a *data) applyMove(others []Animal) {
-	//a.vel.Unit().Scale(a.maxVel)
-	//a.pos = a.pos.Add(a.vel)
 	newPos := a.pos.Add(a.vel)
 
-	collission := false
+	collision := false
 	sumDiff := vec{0, 0}
 	var counts float64
 	for _, other := range others {
 		dist := newPos.Sub(other.GetPosition())
 		if !other.IsSame(a) && dist.Magnitude() <= float64(a.imgHeight*1.1) {
 
-			collission = collission || true
+			collision = collision || true
 			// Einfaches Separieren
 			sumDiff = sumDiff.Add(dist.Unit())
 			counts++
@@ -138,10 +139,9 @@ func (a *data) applyMove(others []Animal) {
 	if counts > 0 {
 		sumDiff = sumDiff.Scale(1 / counts)
 		sumDiff = sumDiff.Scale(0.5)
-		//fmt.Println(sumDiff)
 		a.vel = a.vel.Add(sumDiff)
 	}
-	if !collission {
+	if !collision {
 		a.pos = newPos
 		//a.b = 0x50
 	} else {
@@ -184,24 +184,6 @@ func (a *data) isAtWater() bool {
 	return a.atWater
 }
 
-// TODO: noch programmieren
-func (a *data) avoidWater() {
-	// Grenzen der Welt beachten
-	/*
-		if float32(a.pos[0]) >= a.w.Width {
-			a.pos[0] = float64(a.w.Width)
-		} else if float32(a.pos.X()) <= 0 {
-			a.pos[0] = 0
-		}
-
-		if float32(a.pos.Y()) >= a.w.Height {
-			a.pos[1] = float64(a.w.Height)
-		} else if float32(a.pos.Y()) <= 0 {
-			a.pos[1] = 0
-		}
-	*/
-}
-
 func (a *data) avoidCollisionWithSeenObjects(others []Animal) {
 	avg := vec{0, 0}
 	_, dirs := a.SeeOthers(others)
@@ -230,7 +212,6 @@ func (a *data) repelFromWater() {
 	n, no, o, so, s, sw, w, nw := (*a.w).GetTileBorders(int(a.pos[0]), int(a.pos[1]))
 	tileX, tileY := (*a.w).GetXYTile(int(a.pos.X()), int(a.pos.Y()))
 
-	//fmt.Println("Tile x,y", tileX, tileY, "Grenzen:", n, s, o, w)
 	repel := vec{0, 0}
 	const d = 15
 
@@ -259,7 +240,6 @@ func (a *data) repelFromWater() {
 	if sw && a.pos.Y() >= float64((*a.w).GetTileSizeScaled()*(tileY+1)-d) && float64(a.pos.X()) <= float64((*a.w).GetTileSizeScaled()*tileX+d) {
 		repel[1] = -a.accBorder
 		repel[0] = a.accBorder
-
 	}
 
 	if w && a.pos.X() <= float64((*a.w).GetTileSizeScaled()*tileX+d) {
@@ -269,7 +249,6 @@ func (a *data) repelFromWater() {
 	if nw && a.pos.X() <= float64((*a.w).GetTileSizeScaled()*tileX+d) && float64(a.pos.Y()) <= float64((*a.w).GetTileSizeScaled()*tileY+d) {
 		repel[0] = a.accBorder
 		repel[1] = a.accBorder
-
 	}
 
 	a.vel = a.vel.Add(repel)

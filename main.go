@@ -13,15 +13,16 @@ import (
 )
 
 var (
-	bunnies    [20]animal.Animal
+	bunnies    []animal.Animal
 	welt       world.World
 	tilesImage *ebiten.Image
 	waterImage *ebiten.Image
 )
 
 const (
-	screenWidth  = 20 * 16 * 3
-	screenHeight = 20 * 16 * 3
+	NumberOfBunnies = 20
+	screenWidth     = 20 * 16 * 3
+	screenHeight    = 20 * 16 * 3
 )
 
 type Game struct {
@@ -54,7 +55,8 @@ func (g *Game) Update() error {
 
 	for _, b := range bunnies {
 		//b.SeeOthers(bunnies[:])
-		b.Update(bunnies[:]) // Position neu bestimmen
+
+		b.Update(bunnies) // Position neu bestimmen
 	}
 	return nil
 }
@@ -64,8 +66,7 @@ func (g *Game) Draw(dst *ebiten.Image) {
 	welt.Draw(dst, g.counter)
 
 	for _, b := range bunnies {
-		//b.Separate(bunnies[:])
-		b.Draw(dst) // Ein Jäger
+		b.Draw(dst)
 	}
 	// Text im Fenster
 	msg := fmt.Sprintf("TPS: %0.2f\nFPS: %0.2f", ebiten.ActualTPS(), ebiten.ActualFPS())
@@ -83,7 +84,8 @@ func main() {
 
 	welt = world.New(screenWidth, screenHeight, tilesImage)
 
-	for i := 0; i < len(bunnies); i++ {
+	bunnies = make([]animal.Animal, NumberOfBunnies)
+	for i := 0; i < NumberOfBunnies; i++ {
 		bunnies[i] = animal.New(&welt, (rand.Float64()/2+0.5)*screenWidth/2, (rand.Float64()/2+0.5)*screenHeight/2)
 	}
 

@@ -19,6 +19,11 @@ type Animal interface {
 	// Die neue Position e.pos aus e.vel und e.acc bestimmen.
 	Update(others []Animal)
 
+	// Vor.: -
+	// Eff.: -
+	// Erg.: True ist geliefert, wenn das Tier noch Lebensenergie besitzt.
+	IsAlive() bool
+
 	// Vor.: ?
 	// Eff.: ?
 	// Erg.: Splice mit Objekten (seen) und deren Abstandsvektoren (direction),
@@ -44,5 +49,5 @@ type Animal interface {
 	// Vor.:
 	// Eff.: Das Objekt beschleunigt von anderen Objekten, die im Sichtfeld liegen weg
 	// Erg.:
-	avoidCollisionWithSeenObjects(others []Animal)
+	//avoidCollisionWithSeenObjects(others []Animal)
 }
