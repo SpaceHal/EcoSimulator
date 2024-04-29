@@ -21,7 +21,7 @@ func New(w *world.World, x, y float64, preys *[]animal.Animal) *data {
 	f.SetEnergyLoss(((rand.Float64()*30 + 60) * 60))
 	f.SetPreys(preys)
 	f.SetMaxVel(0.7)
-	f.SetViewMag(150)
+	f.SetViewMag(200)
 
 	return f
 }

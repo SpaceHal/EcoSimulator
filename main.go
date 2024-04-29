@@ -123,7 +123,7 @@ func main() {
 
 	bunnies = make([]animal.Animal, NumberOfBunnies)
 	for i := 0; i < NumberOfBunnies; i++ {
-		bunnies[i] = rabbits.New(&welt, randBetween(40, screenWidth-40), randBetween(40, screenHeight-40))
+		bunnies[i] = rabbits.New(&welt, randBetween(80, screenWidth-80), randBetween(80, screenHeight-80))
 	}
 
 	fuechse = make([]animal.Animal, NumberOfFoxes)
