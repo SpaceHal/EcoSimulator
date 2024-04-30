@@ -27,7 +27,11 @@ type Animal interface {
 	SetEnergyLoss(e float64)
 	SetEnergy(e float64)
 
-	SetImage(img *ebiten.Image)
+	// Vor.: -
+	// Eff.: Das Bild des Tieres wird durch die angegebene Datei ersetzt.
+	// 		 Falls es ein Problem mit der angegebenen Datei gibt, wird nichts geaendert.
+	// Erg.: -
+	SetImageFromFile(file string)
 
 	// Vor.:
 	// Eff.: Setzt die RGB Farbe für das Tier und zeichnet es neu.

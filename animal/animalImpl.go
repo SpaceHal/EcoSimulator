@@ -12,6 +12,7 @@ import (
 	//termC "github.com/fatih/color"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 type data struct {
@@ -95,8 +96,13 @@ func New(w *world.World, x, y float64) *data {
 	return a
 }
 
-func (a *data) SetImage(img *ebiten.Image) {
-	a.img = img
+func (a *data) SetImageFromFile(file string) {
+	var img *ebiten.Image
+	var err error
+	img, _, err = ebitenutil.NewImageFromFile(file)
+	if err == nil {
+		a.img = img
+	}
 }
 
 func (a *data) IsAlive() bool {
