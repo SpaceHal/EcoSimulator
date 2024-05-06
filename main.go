@@ -2,9 +2,9 @@ package main
 
 import (
 	"ecosim/animal"
-	"ecosim/world"
 	"ecosim/foxes"
 	"ecosim/rabbits"
+	"ecosim/world"
 	"fmt"
 	"log"
 	"math/rand"
@@ -16,7 +16,7 @@ import (
 
 var (
 	bunnies    []animal.Animal
-	fuechse	   []animal.Animal
+	fuechse    []animal.Animal
 	welt       world.World
 	tilesImage *ebiten.Image
 	waterImage *ebiten.Image
@@ -24,7 +24,7 @@ var (
 
 const (
 	NumberOfBunnies = 20
-	NumberOfFoxes	= 5
+	NumberOfFoxes   = 5
 	screenWidth     = 20 * 16 * 3
 	screenHeight    = 20 * 16 * 3
 )
@@ -36,6 +36,10 @@ type Game struct {
 	//grid bool
 	//aa   bool
 	//line bool
+}
+
+func randBetween(a, b float64) float64 {
+	return a + rand.Float64()*b
 }
 
 func (g *Game) Update() error {
@@ -57,16 +61,34 @@ func (g *Game) Update() error {
 		welt.ToggleGround(mx, my)
 	}
 
+	// Alle toten Hasen löschen ...
+	eoa := len(bunnies)
+	for i := 0; i < eoa; i++ {
+		if !bunnies[i].IsAlive() {
+			bunnies = append(bunnies[:i], bunnies[i+1:]...)
+			eoa--
+			fmt.Println("Ein Hase ist gestorben.", eoa, "leben noch.")
+		}
+	}
+
 	for _, b := range bunnies {
 		//b.SeeOthers(bunnies[:])
+		b.Update(&bunnies) // Position neu bestimmen
+	}
 
-		b.Update(bunnies) // Position neu bestimmen
+	// Alle toten Füchse löschen ...
+	eoa = len(fuechse)
+	for i := 0; i < eoa; i++ {
+		if !fuechse[i].IsAlive() {
+			fuechse = append(fuechse[:i], fuechse[i+1:]...)
+			eoa--
+			fmt.Println("Ein Fuchs ist gestorben.", eoa, "leben noch.")
+		}
 	}
-	
 	for _, f := range fuechse {
-		f.Update(fuechse[:]) // Position neu bestimmen
+		f.Update(&fuechse) // Position neu bestimmen
 	}
-	
+
 	return nil
 }
 
@@ -78,11 +100,11 @@ func (g *Game) Draw(dst *ebiten.Image) {
 		//b.Separate(bunnies[:])
 		b.Draw(dst) // Eine Beute
 	}
-	
-	for _,f := range fuechse {
+
+	for _, f := range fuechse {
 		f.Draw(dst) // Ein Jäger
 	}
-	
+
 	// Text im Fenster
 	msg := fmt.Sprintf("TPS: %0.2f\nFPS: %0.2f", ebiten.ActualTPS(), ebiten.ActualFPS())
 	ebitenutil.DebugPrint(dst, msg)
@@ -101,14 +123,14 @@ func main() {
 
 	bunnies = make([]animal.Animal, NumberOfBunnies)
 	for i := 0; i < NumberOfBunnies; i++ {
-		bunnies[i] = rabbits.New(&welt, (rand.Float64()/2+0.5)*screenWidth/2, (rand.Float64()/2+0.5)*screenHeight/2)
+		bunnies[i] = rabbits.New(&welt, randBetween(80, screenWidth-80), randBetween(80, screenHeight-80))
 	}
-	
+
 	fuechse = make([]animal.Animal, NumberOfFoxes)
 	for i := 0; i < NumberOfFoxes; i++ {
-		fuechse[i] = foxes.New(&welt, (rand.Float64()/2+0.5)*screenWidth/2, (rand.Float64()/2+0.5)*screenHeight/2)
+		fuechse[i] = foxes.New(&welt, (rand.Float64()/2+0.5)*screenWidth/2, (rand.Float64()/2+0.5)*screenHeight/2, &bunnies)
 	}
-	
+
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("EcoSim")
 	if err := ebiten.RunGame(g); err != nil {

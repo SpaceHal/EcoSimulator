@@ -17,18 +17,41 @@ type vec = ve.Vector //  Vektoren
 
 type Animal interface {
 	// Die neue Position e.pos aus e.vel und e.acc bestimmen.
-	Update(others []Animal)
+	Update(others *[]Animal)
 
 	// Vor.: -
 	// Eff.: -
 	// Erg.: True ist geliefert, wenn das Tier noch Lebensenergie besitzt.
 	IsAlive() bool
 
+	SetEnergyLoss(e float64)
+	SetEnergy(e float64)
+
+	// Vor.: -
+	// Eff.: Das Bild des Tieres wird durch die angegebene Datei ersetzt.
+	// 		 Falls es ein Problem mit der angegebenen Datei gibt, wird nichts geaendert.
+	// Erg.: -
+	SetImageFromFile(file string)
+
+	// Vor.:
+	// Eff.: Setzt die RGB Farbe für das Tier und zeichnet es neu.
+	// Erg.:
+	SetColorRGB(r, g, b uint8)
+
+	// Vor.:
+	// Eff.: Das Attribute der Beutetiere ist gesetzt
+	// Erg.:
+	SetPreys(preys *[]Animal)
+
+	SetMaxVel(v float64)
+
+	SetViewMag(mag float64)
+
 	// Vor.: ?
 	// Eff.: ?
 	// Erg.: Splice mit Objekten (seen) und deren Abstandsvektoren (direction),
 	// die im Sichtfeld des Objekts liegen
-	SeeOthers(others []Animal) (seen []Animal, direction []vec)
+	SeeOthers(others *[]Animal) (*[]Animal, *[]vec)
 
 	// Vor.: -
 	// Eff.: Das Tier ist gezeichnet.

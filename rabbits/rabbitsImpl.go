@@ -1,10 +1,10 @@
 package rabbits
 
 import (
-	"ecosim/animal";
-	"ecosim/world";
-	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil")
+	"ecosim/animal"
+	"ecosim/world"
+	"math/rand"
+)
 
 type data struct {
 	animal.Animal
@@ -13,13 +13,11 @@ type data struct {
 func New(w *world.World, x, y float64) *data {
 	var f *data
 	f = new(data)
-	(*f).Animal = animal.NewWithInheritance(w,x,y,f.makeAnimal())
-	return f
-}
+	(*f).Animal = animal.New(w, x, y)
+	
+	f.SetImageFromFile("rabbits/rabbit.png")
+	f.SetEnergyLoss(((rand.Float64()*30 + 60) * 60))
 
-func (f *data) makeAnimal() *ebiten.Image {
-	var img *ebiten.Image
-	img, _, _ = ebitenutil.NewImageFromFile("rabbits/rabbit.png")
-	return img
+	return f
 }
 
