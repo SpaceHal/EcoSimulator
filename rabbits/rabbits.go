@@ -1,7 +1,11 @@
 package rabbits
 
-import "ecosim/animal"
+import (
+	"ecosim/entity"
+	"ecosim/grass"
+)
 
 type Rabbit interface {
-	animal.Animal
+	entity.Animal
+	Update(others *[]Rabbit, food *[]grass.Grass) (offSpring *data)
 }

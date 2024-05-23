@@ -19,19 +19,23 @@ type World interface {
 	// Erg.: -
 	ToggleDebug()
 
+	ToggleStatistics()
+
 	// Vor.: -
 	// Eff.: -
 	// Erg.: Liefert den aktuellen Status des Debug-Modus.
 	GetDebug() bool
 
+	GetShowStats() bool
+
 	// Vor.: -
 	// Eff.: -
-	// Erg.: Liefert die Breite des Weltes in Pixel.
+	// Erg.: Liefert die Breite der Welt in Pixel.
 	Width() float32
 
 	// Vor.: -
 	// Eff.: -
-	// Erg.: Liefert die Hoehe des Weltes in Pixel.
+	// Erg.: Liefert die Hoehe der Welt in Pixel.
 	Height() float32
 
 	// Vor.: -
@@ -50,7 +54,7 @@ type World interface {
 	Draw(dst *ebiten.Image, c int)
 
 	// Vor.: -
-	// Eff.: Die skailierte Kachelgröße ist geliefert
+	// Eff.: Die skalierte Kachelgröße ist geliefert
 	// Erg.: -
 	GetTileSizeScaled() int
 
@@ -64,4 +68,12 @@ type World interface {
 	// n, no, o, so, s, sw, w, nw eine Wasserkachel liegt.
 	// Erg.: -
 	GetTileBorders(x, y int) (n, no, o, so, s, sw, w, nw bool)
+
+	// Vor.:
+	// Eff.:
+	// Erg.: Der Abstand zum Wasser ist geliefert.
+	// Hat die Kachel keine Küste, sind die Werte 0
+	GetTileDstToWater(x, y int) (n, s, o, w int)
+
+	IsLand(x, y int) bool
 }

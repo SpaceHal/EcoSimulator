@@ -1,7 +1,11 @@
 package foxes
 
-import "ecosim/animal"
+import (
+	"ecosim/entity"
+	"ecosim/rabbits"
+)
 
 type Fox interface {
-	animal.Animal
+	entity.Animal
+	Update(others *[]Fox, preys *[]rabbits.Rabbit) (offSpring *data)
 }
