@@ -577,17 +577,23 @@ func (a *AnimalData) drawStats(screen *ebiten.Image) {
 		}
 
 		opTxt := &text.DrawOptions{}
+		livePoints := 100 - float32(a.age)/float32(a.lifeSpan)*100
 
 		opTxt.GeoM.Translate(-float64(a.imgWidth*1.5), -float64(a.imgHeight*1.5)) // Koordinaten zuerst in die Mitte des Bilder bewegen ...
 		opTxt.GeoM.Translate(a.pos[0], a.pos[1])
-		opTxt.ColorScale.ScaleWithColor(color.Black) // Rot
-		//opTxt.ColorScale.ScaleWithColor(color.RGBA{255, 0, 0, 255})
+		if livePoints < 10 || a.health < 30 {
+			opTxt.ColorScale.ScaleWithColor(color.RGBA{255, 0, 0, 255})
+		} else if livePoints > 90 {
+			//opTxt.ColorScale.ScaleWithColor(color.RGBA{0, 255, 0, 255})
+		} else {
+			opTxt.ColorScale.ScaleWithColor(color.Black) // Rot
+		}
 		text.Draw(screen, fmt.Sprintf("H %2.0f", a.health), optFont, opTxt)
 
 		opTxt.GeoM.Translate(0, 43)
 		//opTxt.ColorScale.ScaleWithColor(color.Black) // Rot
 
-		text.Draw(screen, fmt.Sprintf("%2.0f %%", 100-float32(a.age)/float32(a.lifeSpan)*100), optFont, opTxt)
+		text.Draw(screen, fmt.Sprintf("%2.0f %%", livePoints), optFont, opTxt)
 	}
 }
 
