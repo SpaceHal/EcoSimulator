@@ -1,7 +1,6 @@
 package world
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 	"log"
@@ -28,8 +27,9 @@ type data struct {
 
 	layers [][]int
 
-	grid  bool // aktiviert die Gitterlinien der Kacheln (Debuggen)
-	debug bool // Debugmodus Tiers
+	grid           bool // aktiviert die Gitterlinien der Kacheln (Debuggen)
+	debug          bool // Debugmodus
+	showStatistics bool // zeigt Werte der Objekte an
 }
 
 func init() {
@@ -101,10 +101,10 @@ func New(width float32, height float32, img *ebiten.Image) *data {
 				-1, 11, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, -1,
 				-1, 11, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 70, 12, 12, 12, 12, 13, -1,
 				-1, 11, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, -1,
-				-1, 22, 23, 23, 17, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, -1,
-				-1, -1, -1, -1, 11, 12, 12, 12, 12, 70, 12, 12, 12, 12, 12, 12, 12, 12, 13, -1,
-				-1, -1, -1, -1, 11, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, -1,
-				-1, 0, 1, 1, 28, 12, 12, 58, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, -1,
+				-1, 22, 23, 23, 23, 23, 23, 17, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, -1,
+				-1, -1, -1, -1, -1, -1, -1, 11, 12, 70, 12, 12, 12, 12, 12, 12, 12, 12, 13, -1,
+				-1, -1, -1, -1, -1, -1, -1, 11, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, -1,
+				-1, 0, 1, 1, 1, 1, 1, 28, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, -1,
 				-1, 11, 12, 12, 58, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, -1,
 				-1, 11, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, -1,
 				-1, 11, 12, 12, 12, 12, 12, 12, 12, 12, 70, 12, 12, 12, 12, 12, 12, 12, 13, -1,
@@ -125,7 +125,6 @@ func New(width float32, height float32, img *ebiten.Image) *data {
 // Erg.: -
 func (wo *data) ToggleGrid() {
 	wo.grid = !wo.grid
-	fmt.Println("Debug world:", wo.debug)
 }
 
 // Vor.: -
@@ -133,7 +132,14 @@ func (wo *data) ToggleGrid() {
 // Erg.: -
 func (wo *data) ToggleDebug() {
 	wo.debug = !wo.debug
-	fmt.Println("Debug Animals:", wo.debug)
+}
+
+func (wo *data) ToggleStatistics() {
+	wo.showStatistics = !wo.showStatistics
+}
+
+func (wo *data) GetShowStats() bool {
+	return wo.showStatistics
 }
 
 // Vor.: -
@@ -167,9 +173,54 @@ func (wo *data) GetTileBorders(x, y int) (n, no, o, so, s, sw, w, nw bool) {
 	return
 }
 
+func (wo *data) GetTileDstToWater(x, y int) (n, s, e, w int) {
+	tx, ty := wo.GetXYTile(x, y)
+	if t, ok := wo.getTileNumber(tx, ty); ok {
+		if wo.layers[1][t] == -1 {
+			return -1, -1, -1, -1
+		}
+	}
+	north, _, east, _, south, _, west, _ := wo.GetTileBorders(x, y)
+	offset := int(wo.coastMg * wo.scale)
+
+	if north {
+		n = offset
+	}
+	if south {
+		s = offset
+	}
+	if east {
+		e = offset
+	}
+	if west {
+		w = offset
+	}
+	return
+}
+
+func (wo *data) IsLand(x, y int) bool {
+	n, s, o, w := wo.GetTileDstToWater(int(x), int(y))
+	//fmt.Println(x, y, n)
+	tx, ty := wo.GetXYTile(x, y)
+	px, py := tx*wo.GetTileSizeScaled(), wo.GetTileSizeScaled()*ty
+	if n != -1 { // keine Wasserkachel
+		m := int(wo.GetTileSizeScaled())
+		//fmt.Println(m)
+		if px+w*2 <= x && px+m-o*2 >= x && py+n*2 <= y && py+m-s*2 >= y {
+			return true
+		}
+		//else {
+		//fmt.Println("x,y", int(x), int(y), "px,py", px, py, ", n s o w:", n, s, o, w, ",tile", m)
+		return false
+		//}
+	}
+	return false
+
+}
+
 // Vor.: -
 // Eff.: -
-// Erg.: Liefert die Breite des Weltes in Pixel.
+// Erg.: Liefert die Breite der Welte in Pixel.
 func (wo *data) Width() float32 {
 	return wo.width
 }

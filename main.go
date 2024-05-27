@@ -1,8 +1,8 @@
 package main
 
 import (
-	"ecosim/animal"
 	"ecosim/foxes"
+	"ecosim/grass"
 	"ecosim/rabbits"
 	"ecosim/world"
 	"fmt"
@@ -15,27 +15,24 @@ import (
 )
 
 var (
-	bunnies    []animal.Animal
-	fuechse    []animal.Animal
+	bunnies    []rabbits.Rabbit //[]animal.Animal
+	fuechse    []foxes.Fox      //[]animal.Animal
+	food       []grass.Grass    //[]animal.Animal
 	welt       world.World
 	tilesImage *ebiten.Image
-	waterImage *ebiten.Image
+	//waterImage *ebiten.Image
 )
 
 const (
-	NumberOfBunnies = 20
+	NumberOfBunnies = 10
 	NumberOfFoxes   = 5
+	NumberOfGrass   = 20
 	screenWidth     = 20 * 16 * 3
 	screenHeight    = 20 * 16 * 3
 )
 
 type Game struct {
 	counter int
-	//layers  [][]int // Tile map
-
-	//grid bool
-	//aa   bool
-	//line bool
 }
 
 func randBetween(a, b float64) float64 {
@@ -45,49 +42,73 @@ func randBetween(a, b float64) float64 {
 func (g *Game) Update() error {
 	g.counter++
 
-	// Kachel-Gitter anzeigen
 	if inpututil.IsKeyJustPressed(ebiten.KeyG) {
 		welt.ToggleGrid()
 	}
 
-	// Kachel-Gitter anzeigen
 	if inpututil.IsKeyJustPressed(ebiten.KeyD) {
 		welt.ToggleDebug()
 	}
 
-	// Mausposition einlesen
+	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
+		welt.ToggleStatistics()
+	}
+
 	mx, my := ebiten.CursorPosition()
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+		ok := welt.IsLand(int(mx), int(my))
+		if ok {
+			food = append(food, grass.New(&welt))
+		}
+	}
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
 		welt.ToggleGround(mx, my)
 	}
 
-	// Alle toten Hasen löschen ...
-	eoa := len(bunnies)
+	// Grass löschen ...
+	eoa := len(food)
 	for i := 0; i < eoa; i++ {
-		if !bunnies[i].IsAlive() {
-			bunnies = append(bunnies[:i], bunnies[i+1:]...)
+		if !food[i].IsAlive() {
+			food = append(food[:i], food[i+1:]...)
 			eoa--
-			fmt.Println("Ein Hase ist gestorben.", eoa, "leben noch.")
+			//fmt.Println("Ein Karotte weniger.", eoa, "leben noch.")
 		}
 	}
 
-	for _, b := range bunnies {
-		//b.SeeOthers(bunnies[:])
-		b.Update(&bunnies) // Position neu bestimmen
+	// neues Grass
+	if g.counter%30 == 0 {
+		food = append(food, grass.New(&welt))
 	}
+
+	for _, b := range food {
+		b.Update() // Position neu bestimmen
+	}
+
+	// Alle toten Hasen löschen ...
+	var livingRabbits []rabbits.Rabbit
+	for _, bunny := range bunnies {
+		if bunny.IsAlive() {
+			livingRabbits = append(livingRabbits, bunny)
+			newFuchs := bunny.Update(&bunnies, &food)
+			if newFuchs != nil {
+				livingRabbits = append(livingRabbits, newFuchs)
+			}
+		}
+	}
+	bunnies = livingRabbits
 
 	// Alle toten Füchse löschen ...
-	eoa = len(fuechse)
-	for i := 0; i < eoa; i++ {
-		if !fuechse[i].IsAlive() {
-			fuechse = append(fuechse[:i], fuechse[i+1:]...)
-			eoa--
-			fmt.Println("Ein Fuchs ist gestorben.", eoa, "leben noch.")
+	var livingFuechse []foxes.Fox
+	for _, fuchs := range fuechse {
+		if fuchs.IsAlive() {
+			livingFuechse = append(livingFuechse, fuchs)
+			newFuchs := fuchs.Update(&fuechse, &bunnies)
+			if newFuchs != nil {
+				livingFuechse = append(livingFuechse, newFuchs)
+			}
 		}
 	}
-	for _, f := range fuechse {
-		f.Update(&fuechse) // Position neu bestimmen
-	}
+	fuechse = livingFuechse
 
 	return nil
 }
@@ -96,17 +117,21 @@ func (g *Game) Draw(dst *ebiten.Image) {
 
 	welt.Draw(dst, g.counter)
 
+	for _, gr := range food {
+		gr.Draw(dst)
+	}
+
 	for _, b := range bunnies {
-		//b.Separate(bunnies[:])
-		b.Draw(dst) // Eine Beute
+		b.Draw(dst)
 	}
 
 	for _, f := range fuechse {
-		f.Draw(dst) // Ein Jäger
+		f.Draw(dst)
 	}
 
 	// Text im Fenster
-	msg := fmt.Sprintf("TPS: %0.2f\nFPS: %0.2f", ebiten.ActualTPS(), ebiten.ActualFPS())
+	msg := fmt.Sprintf("FPS: %0.2f\n Essen:\t %d \n Hasen:\t%d \n Füchse:\t%d ",
+		ebiten.ActualFPS(), len(food), len(bunnies), len(fuechse))
 	ebitenutil.DebugPrint(dst, msg)
 }
 
@@ -121,14 +146,19 @@ func main() {
 
 	welt = world.New(screenWidth, screenHeight, tilesImage)
 
-	bunnies = make([]animal.Animal, NumberOfBunnies)
-	for i := 0; i < NumberOfBunnies; i++ {
-		bunnies[i] = rabbits.New(&welt, randBetween(80, screenWidth-80), randBetween(80, screenHeight-80))
+	food = make([]grass.Grass, NumberOfGrass)
+	for i := 0; i < NumberOfGrass; i++ {
+		food[i] = grass.New(&welt)
 	}
 
-	fuechse = make([]animal.Animal, NumberOfFoxes)
+	bunnies = make([]rabbits.Rabbit, NumberOfBunnies)
+	for i := 0; i < NumberOfBunnies; i++ {
+		bunnies[i] = rabbits.New(&welt)
+	}
+
+	fuechse = make([]foxes.Fox, NumberOfFoxes)
 	for i := 0; i < NumberOfFoxes; i++ {
-		fuechse[i] = foxes.New(&welt, (rand.Float64()/2+0.5)*screenWidth/2, (rand.Float64()/2+0.5)*screenHeight/2, &bunnies)
+		fuechse[i] = foxes.New(&welt)
 	}
 
 	ebiten.SetWindowSize(screenWidth, screenHeight)
