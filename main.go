@@ -6,6 +6,16 @@ import (
 	"ecosim/grass"
 	"ecosim/rabbits"
 	"ecosim/world"
+	"ecosim/ui"
+	
+	"bytes"
+	"image"
+	"image/color"
+	_ "image/png"
+	"golang.org/x/image/font/gofont/goregular"
+	"github.com/hajimehoshi/ebiten/v2/examples/resources/images"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
+
 	"fmt"
 	"log"
 
@@ -20,21 +30,93 @@ var (
 	fuechse    []foxes.Fox      //[]animal.Animal
 	food       []grass.Grass    //[]animal.Animal
 	welt       world.World
+	userInt    ui.UI
 	tilesImage *ebiten.Image
-	//waterImage *ebiten.Image
+	waterImage *ebiten.Image
+	gameRunning bool
+	uiImage      *ebiten.Image
+	uiFaceSource *text.GoTextFaceSource
+)
+
+func init() {
+	// Decode an image from the image file's byte slice.
+	img, _, err := image.Decode(bytes.NewReader(images.UI_png))
+	if err != nil {
+		log.Fatal(err)
+	}
+	uiImage = ebiten.NewImageFromImage(img)
+	
+	s, err := text.NewGoTextFaceSource(bytes.NewReader(goregular.TTF))
+	if err != nil {
+		log.Fatal(err)
+	}
+	uiFaceSource = s
+}
+
+const (
+	uiFontSize          = 16
+	lineSpacingInPixels = 16
 )
 
 const (
-	NumberOfCats    = 5
-	NumberOfBunnies = 10
-	NumberOfFoxes   = 5
-	NumberOfGrass   = 20
+	buttonHeight	= 32
+	buttonWidth		= 128
+	buttonPadding	= 8
 	screenWidth     = 20 * 16 * 2
-	screenHeight    = 20 * 16 * 2
+	screenHeight    = 20 * 16 * 2 + buttonHeight + buttonPadding*2
 )
 
 type Game struct {
 	counter int
+	button *Button
+}
+
+type Input struct {
+	mouseButtonState int
+}
+
+type Button struct {
+	x	float64
+	y  	float64
+	text string
+	mouseDown bool
+	onPressed func(b *Button)
+}
+
+func (b *Button) Update() {
+	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+		x, y := ebiten.CursorPosition()
+		if b.x <= float64(x) && float64(x) < b.x + buttonWidth && b.y <= float64(y) && float64(y) < b.y + buttonHeight {
+			b.mouseDown = true
+		} else {
+			b.mouseDown = false
+		}
+	} else {
+		if b.mouseDown {
+			if b.onPressed != nil {
+				b.onPressed(b)
+			}
+		}
+		b.mouseDown = false
+	}
+}
+
+func (b *Button) Draw(dst *ebiten.Image) {
+	ebitenutil.DrawRect(dst,b.x,b.y,buttonWidth,buttonHeight,color.RGBA{0x80, 0x80, 0x80, 0xff})
+	op := &text.DrawOptions{}
+	op.GeoM.Translate(float64(b.x+(buttonWidth/2)), float64(b.y+buttonHeight/2))
+	op.ColorScale.ScaleWithColor(color.Black)
+	op.LineSpacing = 16
+	op.PrimaryAlign = text.AlignCenter
+	op.SecondaryAlign = text.AlignCenter
+	text.Draw(dst, b.text, &text.GoTextFace{
+		Source: uiFaceSource,
+		Size:   uiFontSize,
+	}, op)
+}
+
+func (b *Button) SetOnPressed(f func(b *Button)) {
+	b.onPressed = f
 }
 
 func (g *Game) Update() error {
@@ -53,26 +135,35 @@ func (g *Game) Update() error {
 	}
 
 	mx, my := ebiten.CursorPosition()
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+
+	if gameRunning && inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		ok := welt.IsLand(int(mx), int(my))
 		if ok {
 			food = append(food, grass.New(&welt))
 		}
 	}
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
+	if gameRunning && inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
 		welt.ToggleGround(mx, my)
 	}
 
+	g.button.Update()
+	
+	if !gameRunning { 
+		userInt.Update()
+		return nil 
+	}
+	
 	// Grass löschen ...
 	eoa := len(food)
-	for i := 0; i < eoa; i++ {
-		if !food[i].IsAlive() {
-			food = append(food[:i], food[i+1:]...)
-			eoa--
-			//fmt.Println("Ein Karotte weniger.", eoa, "leben noch.")
+	if eoa > 0 {
+		for i := 0; i < eoa; i++ {
+			if !food[i].IsAlive() {
+				food = append(food[:i], food[i+1:]...)
+				eoa--
+				//fmt.Println("Ein Karotte weniger.", eoa, "leben noch.")
+			}
 		}
 	}
-
 	// neues Grass
 	if g.counter%30 == 0 && g != nil {
 		food = append(food, grass.New(&welt))
@@ -124,8 +215,7 @@ func (g *Game) Update() error {
 	return nil
 }
 
-func (g *Game) Draw(dst *ebiten.Image) {
-
+func drawGame(g *Game, dst *ebiten.Image) {
 	welt.Draw(dst, g.counter)
 
 	for _, f := range food {
@@ -143,15 +233,58 @@ func (g *Game) Draw(dst *ebiten.Image) {
 	for _, f := range fuechse {
 		f.Draw(dst)
 	}
+}
 
-	// Text im Fenster
-	msg := fmt.Sprintf("FPS: %0.2f\n Essen:\t %d \n Hasen:\t%d \n Füchse:\t%d ",
-		ebiten.ActualFPS(), len(food), len(bunnies), len(fuechse))
-	ebitenutil.DebugPrint(dst, msg)
+func (g *Game) Draw(dst *ebiten.Image) {
+	g.button.Draw(dst)
+	
+	if !gameRunning { 
+		userInt.Draw(dst)
+	} else {
+		drawGame(g,dst)
+		
+		// Text im Fenster
+		msg := fmt.Sprintf("FPS: %0.2f\n Essen:\t %d \n Hasen:\t%d \n Füchse:\t%d ",
+			ebiten.ActualFPS(), len(food), len(bunnies), len(fuechse))
+		ebitenutil.DebugPrint(dst, msg)
+	}
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return screenWidth, screenHeight
+}
+
+func resetGrass() {
+	n:=userInt.GetNumberOfGrass()
+	fmt.Println("Grass:", n)
+	food = make([]grass.Grass, n)
+	for i := 0; i < n; i++ {
+		food[i] = grass.New(&welt)
+	}
+}
+
+func resetBunnies() {
+	n:=userInt.GetNumberOfBunnies()
+	bunnies = make([]rabbits.Rabbit,n) 
+	for i := 0; i < n; i++ {
+		bunnies[i] = rabbits.New(&welt)
+	}
+}
+
+func resetCats() {
+	n:=userInt.GetNumberOfCats()
+	katzen = make([]cats.Cat, n)
+	for i := 0; i < n; i++ {
+		katzen[i] = cats.New(&welt)
+	}
+}
+
+func resetFoxes() {
+	n:=userInt.GetNumberOfFoxes()
+	fuechse = make([]foxes.Fox, n)
+	for i := 0; i < n; i++ {
+		fuechse[i] = foxes.New(&welt)
+	}
 }
 
 func main() {
@@ -159,30 +292,36 @@ func main() {
 		counter: 0,
 	}
 
-	welt = world.New(screenWidth, screenHeight, tilesImage)
+	welt = world.New(screenWidth, screenHeight - buttonHeight, tilesImage)
+	userInt = ui.New()
 
-	food = make([]grass.Grass, NumberOfGrass)
-	for i := 0; i < NumberOfGrass; i++ {
-		food[i] = grass.New(&welt)
+	resetGrass()
+	resetBunnies()
+	resetCats()
+	resetFoxes()
+	
+	g.button = &Button{
+		x:	  screenWidth - buttonWidth - buttonPadding,
+		y:	  screenHeight - buttonPadding - buttonHeight,
+		text: "Start",
 	}
-
-	katzen = make([]cats.Cat, NumberOfCats)
-	for i := 0; i < NumberOfCats; i++ {
-		katzen[i] = cats.New(&welt)
-	}
-
-	bunnies = make([]rabbits.Rabbit, NumberOfBunnies)
-	for i := 0; i < NumberOfBunnies; i++ {
-		bunnies[i] = rabbits.New(&welt)
-	}
-
-	fuechse = make([]foxes.Fox, NumberOfFoxes)
-	for i := 0; i < NumberOfFoxes; i++ {
-		fuechse[i] = foxes.New(&welt)
-	}
+	
+	g.button.SetOnPressed(func(b *Button) {
+		resetGrass()
+		resetBunnies()
+		resetCats()
+		resetFoxes()
+		gameRunning = !gameRunning
+		if gameRunning {
+			b.text = "Stop"
+		} else {
+			b.text = "Start"
+		}
+	})
 
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("EcoSim")
+	
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
 	}
