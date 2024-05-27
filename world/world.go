@@ -6,7 +6,7 @@ import (
 
 // Vor.: -
 // Erg.: ein neuer Welt
-// New (width, height float32, img *ebiten.Image) *data // *data erfüllt das Interface World
+// New (width, height float32, scale float32, img *ebiten.Image) *data // *data erfüllt das Interface World
 
 type World interface {
 	// Vor.: -

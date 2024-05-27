@@ -62,8 +62,9 @@ const (
 	buttonHeight	= 32
 	buttonWidth		= 128
 	buttonPadding	= 8
-	screenWidth     = 20 * 16 * 2
-	screenHeight    = 20 * 16 * 2 + buttonHeight + buttonPadding*2
+	scale			= 2
+	screenWidth     = 20 * 16 * scale
+	screenHeight    = 20 * 16 * scale + buttonHeight + buttonPadding*2
 )
 
 type Game struct {
@@ -292,7 +293,7 @@ func main() {
 		counter: 0,
 	}
 
-	welt = world.New(screenWidth, screenHeight - buttonHeight, tilesImage)
+	welt = world.New(screenWidth, screenHeight - buttonHeight, scale, tilesImage)
 	userInt = ui.New()
 
 	resetGrass()
