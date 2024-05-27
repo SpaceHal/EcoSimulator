@@ -191,9 +191,9 @@ func (g *Game) Update() error {
 	for _, bunny := range bunnies {
 		if bunny.IsAlive() {
 			livingRabbits = append(livingRabbits, bunny)
-			newFuchs := bunny.Update(&bunnies, &food)
-			if newFuchs != nil {
-				livingRabbits = append(livingRabbits, newFuchs)
+			newRabbit := bunny.Update(&bunnies, &food)
+			if newRabbit != nil {
+				livingRabbits = append(livingRabbits, newRabbit)
 			}
 		}
 	}

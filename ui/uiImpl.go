@@ -30,7 +30,7 @@ type data struct {
 }
 
 var (
-	NumberOrCats	= 5
+	NumberOfCats	= 5
 	NumberOfBunnies = 10
 	NumberOfFoxes	= 5
 	NumberOfGrass	= 20
@@ -72,6 +72,7 @@ type Slider struct {
 	onSliderChanged func(s *Slider)
 	currentValue int
 	maxValue int
+	active bool
 }
 
 type CheckBox struct {
@@ -102,7 +103,7 @@ func (c *CheckBox) Update() {
 	}
 }
 
-func drawText(dst *ebiten.Image, x,y float64, str string) {
+func drawText(dst *ebiten.Image, x,y float64, size float64, str string) {
 	op := &text.DrawOptions{}
 	op.GeoM.Translate(x, y)
 	op.ColorScale.ScaleWithColor(color.White)
@@ -110,7 +111,7 @@ func drawText(dst *ebiten.Image, x,y float64, str string) {
 	op.SecondaryAlign = text.AlignCenter
 	text.Draw(dst, str, &text.GoTextFace{
 		Source: uiFaceSource,
-		Size:   uiFontSize,
+		Size:   size,
 	}, op)
 }
 
@@ -121,11 +122,11 @@ func (c *CheckBox) Draw(dst *ebiten.Image) {
 		ebitenutil.DrawCircle(dst,c.x+offset,c.y+offset,offset-2,color.RGBA{0x80, 0x80, 0x80, 0xff})
 	}
 
-	drawText(dst,c.x + checkboxWidth + padding,c.y + checkboxHeight/2,c.text)
+	drawText(dst,c.x + checkboxWidth + padding,c.y + checkboxHeight/2,uiFontSize,c.text)
 }
 
 func (s *Slider) Update() {
-	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+	if s.active && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		x, y := ebiten.CursorPosition()
 		var padding float64 = sliderHeight*2
 		if s.x <= float64(x) && float64(x) < s.x+sliderWidth && s.y-padding <= float64(y) && float64(y) < s.y+sliderHeight+padding {
@@ -139,10 +140,21 @@ func (s *Slider) Update() {
 }
 
 func (s *Slider) Draw(dst *ebiten.Image) {
-	ebitenutil.DrawRect(dst, s.x, s.y, sliderWidth, sliderHeight, color.RGBA{0x80, 0x80, 0x80, 0xff})
-	xPos := s.x + float64(s.currentValue*sliderWidth/s.maxValue)
-	ebitenutil.DrawCircle(dst, xPos, s.y+sliderHeight/2, sliderHeight, color.RGBA{255,255,255,255})
-	drawText(dst,s.x + sliderWidth + 16,s.y + sliderHeight/2,s.textBase + strconv.Itoa(s.currentValue))
+	var n int
+	var colorSlider, colorHandle color.Color
+	if s.active {
+		n = s.currentValue
+		colorSlider = color.RGBA{0x80, 0x80, 0x80, 0xff}
+		colorHandle = color.RGBA{255,255,255,255}
+	} else {
+		n = 0
+		colorSlider = color.RGBA{0x40, 0x40, 0x40, 0xff}
+		colorHandle = color.RGBA{0x40, 0x40, 0x40, 0xff}
+	}
+	ebitenutil.DrawRect(dst, s.x, s.y, sliderWidth, sliderHeight, colorSlider)
+	xPos := s.x + float64(n*sliderWidth/s.maxValue)
+	ebitenutil.DrawCircle(dst, xPos, s.y+sliderHeight/2, sliderHeight, colorHandle)
+	drawText(dst,s.x + sliderWidth + 16,s.y + sliderHeight/2,uiFontSize,s.textBase + strconv.Itoa(n))
 }
 
 func New() *data {
@@ -162,8 +174,10 @@ func New() *data {
 	u.checkBoxGrass.onCheckChanged = func(c *CheckBox) {
 		if c.checked {
 			u.nGrass = NumberOfGrass
+			u.sliderGrass.active = true
 		} else {
 			u.nGrass = 0
+			u.sliderGrass.active = false
 		}
 	}
 	
@@ -173,6 +187,7 @@ func New() *data {
 		maxValue: 100,
 		textBase: "Anzahl Grassflächen: ",
 		currentValue: NumberOfGrass,
+		active: true,
 	}
 	
 	u.sliderGrass.onSliderChanged = func(s *Slider) {
@@ -189,8 +204,10 @@ func New() *data {
 	u.checkBoxBunnies.onCheckChanged = func(c *CheckBox) {
 		if c.checked {
 			u.nBunnies = NumberOfBunnies
+			u.sliderBunnies.active = true
 		} else {
 			u.nBunnies = 0
+			u.sliderBunnies.active = false
 		}
 	}
 		
@@ -200,6 +217,7 @@ func New() *data {
 		maxValue: 50,
 		textBase: "Anzahl Hasen: ",
 		currentValue: NumberOfBunnies,
+		active: true,
 	}
 	
 	u.sliderBunnies.onSliderChanged = func(s *Slider) {
@@ -243,8 +261,10 @@ func New() *data {
 	u.checkBoxFoxes.onCheckChanged =func(c *CheckBox) {
 		if c.checked {
 			u.nFoxes = NumberOfFoxes
+			u.sliderFoxes.active = true
 		} else {
 			u.nFoxes = 0
+			u.sliderFoxes.active = false
 		}
 	}
 
@@ -254,6 +274,7 @@ func New() *data {
 		maxValue: 30,
 		textBase: "Anzahl Fuchse: ",
 		currentValue: NumberOfFoxes,
+		active: true,
 	}
 	
 	u.sliderFoxes.onSliderChanged = func(s *Slider) {
@@ -280,6 +301,7 @@ func (u *data) GetNumberOfFoxes() int {
 }
 
 func (u *data) Draw(dst *ebiten.Image) {
+	drawText(dst,leftIndent,uiFontSize*1.5,uiFontSize*1.5,"Einstellungen")
 	u.checkBoxGrass.Draw(dst)
 	u.sliderGrass.Draw(dst)
 	u.checkBoxBunnies.Draw(dst)
