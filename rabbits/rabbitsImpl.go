@@ -26,7 +26,7 @@ func New(w *world.World) *data {
 	r = new(data)
 	(*r).Animal = entity.New(w)
 
-	r.SetImageFromFile("rabbits/rabbit.png")
+	r.SetImageFromFile("rabbits/rabbit.png", 0, 0, 0)
 	//f.SetColorRGB(21, 123, 220)
 	r.SetHealthLoss((rand.Float64() * BunnyHealthLoss / 4) + BunnyHealthLoss)
 	r.SetMaxVel(BunnyMaxVelocitiy)

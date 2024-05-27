@@ -53,7 +53,7 @@ func New(width float32, height float32, img *ebiten.Image) *data {
 		width:    width,
 		height:   height,
 		coastMg:  3,
-		margin:   (16 + 6) * 3,
+		margin:   (16 + 6) * 2,
 		r:        0xeb,
 		g:        0xeb,
 		b:        0xeb,
@@ -61,7 +61,7 @@ func New(width float32, height float32, img *ebiten.Image) *data {
 		tileSize: 16,
 
 		//tilesImage: img,
-		scale: 3,
+		scale: 2,
 
 		// Karte mit zwei Ebenen, wo welche Tiles abgebildet werden.
 		// Die Tiles (16x16) werden von oben links der Reihe nach durchgezählt.

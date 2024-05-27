@@ -67,19 +67,29 @@ func NewDrawable(w *world.World) DrawableData {
 		g:         0x00,
 		b:         0x50,
 		a:         0x60,
-		imgWidth:  20,
-		imgHeight: 20,
+		imgWidth:  32,
+		imgHeight: 32,
 		aa:        true,
 	}
 }
 
-func (a *DrawableData) SetImageFromFile(file string) {
+func (a *DrawableData) SetImageFromFile(file string, size, x, y int) {
 	var img *ebiten.Image
 	var err error
 	img, _, err = ebitenutil.NewImageFromFile(file)
 	if err == nil {
-		a.img = img
+		if size == 0 {
+			a.img = img
+		} else {
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Scale(2, 2)
+			imgN := img.SubImage(image.Rect(size*x, size*y, size*(x+1), size*(y+1))).(*ebiten.Image)
+			a.img.Clear()
+			a.img.DrawImage(imgN, op)
+
+		}
 		a.imgIsSetFromFile = true
+
 	}
 }
 
@@ -416,30 +426,7 @@ func (a *AnimalData) avoidCollisionWithSeenObjects(others *[]Animal) {
 	a.vel = a.vel.Unit().Scale(a.maxVel).Add(z)
 }
 
-/*
-func (a *AnimalData) flee(others *[]Animal) {
-	if others == nil {
-		return
-	}
-
-	seenAnimals, directions := a.SeeOthers(others)
-	iClosest := 0
-	for i := 0; i < len(*seenAnimals); i++ {
-		if (*directions)[i].Magnitude() < (*directions)[iClosest].Magnitude() {
-			iClosest = i
-		}
-	}
-
-	if len(*seenAnimals) > 0 {
-		huntDir := (*directions)[iClosest].Unit()
-		huntDir = huntDir.Scale(a.maxAccPhi * 10)
-		z := a.vel.Unit().Scale(-a.ahead)
-		z = z.Add(huntDir)
-		a.vel = a.vel.Unit().Scale(a.maxVel).Add(z)
-	}
-
-}
-*/
+//func (a *AnimalData) flee(others *[]Animal) {}
 
 // Vor.:
 // Eff.: Bewegt sich in Richtung des nächsten im Sichtfeld gelegenen Tiers/Essens

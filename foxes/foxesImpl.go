@@ -26,7 +26,7 @@ func New(w *world.World) *data {
 	f = new(data)
 	(*f).Animal = entity.New(w)
 
-	f.SetImageFromFile("foxes/fox.png")
+	f.SetImageFromFile("foxes/fox.png", 0, 0, 0)
 	//f.SetColorRGB(204, 20, 204)
 
 	//f.SetEnergy(900)

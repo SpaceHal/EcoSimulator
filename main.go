@@ -1,13 +1,13 @@
 package main
 
 import (
+	"ecosim/cats"
 	"ecosim/foxes"
 	"ecosim/grass"
 	"ecosim/rabbits"
 	"ecosim/world"
 	"fmt"
 	"log"
-	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -15,6 +15,7 @@ import (
 )
 
 var (
+	katzen     []cats.Cat       //[]animal.Animal
 	bunnies    []rabbits.Rabbit //[]animal.Animal
 	fuechse    []foxes.Fox      //[]animal.Animal
 	food       []grass.Grass    //[]animal.Animal
@@ -24,19 +25,16 @@ var (
 )
 
 const (
+	NumberOfCats    = 5
 	NumberOfBunnies = 10
 	NumberOfFoxes   = 5
 	NumberOfGrass   = 20
-	screenWidth     = 20 * 16 * 3
-	screenHeight    = 20 * 16 * 3
+	screenWidth     = 20 * 16 * 2
+	screenHeight    = 20 * 16 * 2
 )
 
 type Game struct {
 	counter int
-}
-
-func randBetween(a, b float64) float64 {
-	return a + rand.Float64()*b
 }
 
 func (g *Game) Update() error {
@@ -76,7 +74,7 @@ func (g *Game) Update() error {
 	}
 
 	// neues Grass
-	if g.counter%30 == 0 {
+	if g.counter%30 == 0 && g != nil {
 		food = append(food, grass.New(&welt))
 	}
 
@@ -84,7 +82,20 @@ func (g *Game) Update() error {
 		b.Update() // Position neu bestimmen
 	}
 
-	// Alle toten Hasen löschen ...
+	// Alle Katzen aktualisieren
+	var livingKatzen []cats.Cat
+	for _, katze := range katzen {
+		if katze.IsAlive() {
+			livingKatzen = append(livingKatzen, katze)
+			neueKatze := katze.Update(&katzen, &bunnies, &food)
+			if neueKatze != nil {
+				livingKatzen = append(livingKatzen, neueKatze)
+			}
+		}
+	}
+	katzen = livingKatzen
+
+	// Alle Hasen aktualisieren
 	var livingRabbits []rabbits.Rabbit
 	for _, bunny := range bunnies {
 		if bunny.IsAlive() {
@@ -97,7 +108,7 @@ func (g *Game) Update() error {
 	}
 	bunnies = livingRabbits
 
-	// Alle toten Füchse löschen ...
+	// Alle Füchse aktualisieren
 	var livingFuechse []foxes.Fox
 	for _, fuchs := range fuechse {
 		if fuchs.IsAlive() {
@@ -117,12 +128,16 @@ func (g *Game) Draw(dst *ebiten.Image) {
 
 	welt.Draw(dst, g.counter)
 
-	for _, gr := range food {
-		gr.Draw(dst)
+	for _, f := range food {
+		f.Draw(dst)
 	}
 
 	for _, b := range bunnies {
 		b.Draw(dst)
+	}
+
+	for _, k := range katzen {
+		k.Draw(dst)
 	}
 
 	for _, f := range fuechse {
@@ -149,6 +164,11 @@ func main() {
 	food = make([]grass.Grass, NumberOfGrass)
 	for i := 0; i < NumberOfGrass; i++ {
 		food[i] = grass.New(&welt)
+	}
+
+	katzen = make([]cats.Cat, NumberOfCats)
+	for i := 0; i < NumberOfCats; i++ {
+		katzen[i] = cats.New(&welt)
 	}
 
 	bunnies = make([]rabbits.Rabbit, NumberOfBunnies)

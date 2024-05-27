@@ -40,18 +40,19 @@
             "scale": 1.67,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 183.83233532934136,
-                "y": 143.71257485029946
+                "x": 184.43113772455092,
+                "y": 144.31137724550896
             }
         }
     },
     "last.exportedFilePath": "/Users/stefan/Documents/Schule/30_LWB_Info/10_Daten/SoftwareProjekt/EcoSim/resources",
-    "last.imagePath": "/Users/stefan/Documents/Schule/30_LWB_Info/10_Daten/SoftwareProjekt/Neuer Ordner/Sprout Lands - Sprites - Basic pack/Tilesets",
+    "last.imagePath": "/Users/stefan/Documents/Schule/30_LWB_Info/10_Daten/SoftwareProjekt/EcoSim/resources",
+    "map.height": 4,
     "map.lastUsedExportFilter": "CSV files (*.csv)",
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 16,
     "map.tileWidth": 16,
-    "map.width": 20,
+    "map.width": 4,
     "openFiles": [
         "world.tmx",
         "grass.tsx",

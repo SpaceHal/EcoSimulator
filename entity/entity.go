@@ -66,7 +66,7 @@ type Animal interface {
 	// Eff.: Das Bild des Tieres wird durch die angegebene Datei ersetzt.
 	// 		 Falls es ein Problem mit der angegebenen Datei gibt, wird nichts geaendert.
 	// Erg.: -
-	SetImageFromFile(file string)
+	SetImageFromFile(file string, size, x, y int)
 
 	// Vor.:
 	// Eff.: Setzt die RGB Farbe für das Tier und zeichnet es neu.

@@ -3,6 +3,12 @@ package config
 import "math"
 
 const (
+	CatHealthLoss    = 300 // stirbt frühestens nach CatHealthLoss Frames ohne Nahrung
+	CatMaxVelocitiy  = 0.5
+	CatViewMagnitude = 200
+	CatViewAngle     = math.Pi * 0.5
+	CatMatureAge     = 130
+
 	FoxHealthLoss    = 200 // stirbt frühestens nach FoxHealthLoss Frames ohne Nahrung
 	FoxMaxVelocitiy  = 0.55
 	FoxViewMagnitude = 300
