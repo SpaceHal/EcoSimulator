@@ -257,7 +257,6 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 
 func resetGrass() {
 	n:=userInt.GetNumberOfGrass()
-	fmt.Println("Grass:", n)
 	food = make([]grass.Grass, n)
 	for i := 0; i < n; i++ {
 		food[i] = grass.New(&welt)

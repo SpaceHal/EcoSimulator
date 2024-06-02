@@ -45,7 +45,7 @@ const (
 	sliderHeight		= 8
 	padding 			= 8
 	uiFontSize          = 16
-	lineSpacingInPixels = 80
+	lineSpacingInPixels = 60
 	leftIndent			= 32
 )
 
@@ -166,7 +166,7 @@ func New() *data {
 	
 	u.checkBoxGrass	= &CheckBox {
 		x:	leftIndent,
-		y:  lineSpacingInPixels,
+		y:  lineSpacingInPixels*3,
 		text: "Grass",
 		checked: true,
 	}
@@ -183,7 +183,7 @@ func New() *data {
 	
 	u.sliderGrass = &Slider {
 		x: leftIndent,
-		y: lineSpacingInPixels*2,
+		y: lineSpacingInPixels*4,
 		maxValue: 100,
 		textBase: "Anzahl Grassflächen: ",
 		currentValue: NumberOfGrass,
@@ -196,7 +196,7 @@ func New() *data {
 	
 	u.checkBoxBunnies = &CheckBox{
 		x:    leftIndent,
-		y:    lineSpacingInPixels*3,
+		y:    lineSpacingInPixels*5,
 		text: "Hasen",
 		checked: true,
 	}
@@ -213,7 +213,7 @@ func New() *data {
 		
 	u.sliderBunnies = &Slider {
 		x: leftIndent,
-		y: lineSpacingInPixels*4,
+		y: lineSpacingInPixels*6,
 		maxValue: 50,
 		textBase: "Anzahl Hasen: ",
 		currentValue: NumberOfBunnies,
@@ -226,7 +226,7 @@ func New() *data {
 	
 	u.checkBoxCats = &CheckBox{
 		x:    leftIndent,
-		y:    lineSpacingInPixels*5,
+		y:    lineSpacingInPixels*7,
 		text: "Katzen",
 		checked: true,
 	}
@@ -241,7 +241,7 @@ func New() *data {
 		
 	u.sliderCats = &Slider {
 		x: leftIndent,
-		y: lineSpacingInPixels*6,
+		y: lineSpacingInPixels*8,
 		maxValue: 50,
 		textBase: "Anzahl Katzen: ",
 		currentValue: NumberOfCats,
@@ -253,7 +253,7 @@ func New() *data {
 	
 	u.checkBoxFoxes = &CheckBox{
 		x:    leftIndent,
-		y:    lineSpacingInPixels*7,
+		y:    lineSpacingInPixels*9,
 		text: "Fuechse",
 		checked: true,
 	}
@@ -270,7 +270,7 @@ func New() *data {
 
 	u.sliderFoxes = &Slider {
 		x: leftIndent,
-		y: lineSpacingInPixels*8,
+		y: lineSpacingInPixels*10,
 		maxValue: 30,
 		textBase: "Anzahl Fuchse: ",
 		currentValue: NumberOfFoxes,
@@ -302,6 +302,13 @@ func (u *data) GetNumberOfFoxes() int {
 
 func (u *data) Draw(dst *ebiten.Image) {
 	drawText(dst,leftIndent,uiFontSize*1.5,uiFontSize*1.5,"Einstellungen")
+	var beschreibung [3]string = [3]string{
+		"Dieses Programm simuliert die Jäger-Beute-Beziehung zwischen verschiedenen", 
+		"Tieren und Pflanzen. Die einzelnen Komponenten können aktiviert oder", 
+		"desaktiviert werden, und der Anfangsanzahl bestimmt."}
+	for i:=0;i<len(beschreibung);i++ {
+		drawText(dst,leftIndent,lineSpacingInPixels+float64(i*uiFontSize),uiFontSize,beschreibung[i])
+	}
 	u.checkBoxGrass.Draw(dst)
 	u.sliderGrass.Draw(dst)
 	u.checkBoxBunnies.Draw(dst)
