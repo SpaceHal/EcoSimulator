@@ -7,6 +7,7 @@ import (
 	"ecosim/rabbits"
 	"ecosim/world"
 	"ecosim/ui"
+	"ecosim/graphics"
 	
 	"bytes"
 	"image"
@@ -16,7 +17,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/examples/resources/images"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 
-	"fmt"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -31,6 +31,7 @@ var (
 	food       []grass.Grass    //[]animal.Animal
 	welt       world.World
 	userInt    ui.UI
+	grafik	   graphics.Graphics
 	tilesImage *ebiten.Image
 	waterImage *ebiten.Image
 	gameRunning bool
@@ -59,12 +60,13 @@ const (
 )
 
 const (
+	graphicsWidth	= 256
 	buttonHeight	= 32
-	buttonWidth		= 128
 	buttonPadding	= 8
+	buttonWidth		= graphicsWidth - 2*buttonPadding
 	scale			= 2
-	screenWidth     = 20 * 16 * scale
-	screenHeight    = 20 * 16 * scale + buttonHeight + buttonPadding*2
+	screenWidth     = 20 * 16 * scale + graphicsWidth
+	screenHeight    = 20 * 16 * scale 
 )
 
 type Game struct {
@@ -213,6 +215,7 @@ func (g *Game) Update() error {
 	}
 	fuechse = livingFuechse
 
+	grafik.Update(len(food),len(bunnies),len(fuechse))
 	return nil
 }
 
@@ -237,17 +240,14 @@ func drawGame(g *Game, dst *ebiten.Image) {
 }
 
 func (g *Game) Draw(dst *ebiten.Image) {
+	ebitenutil.DrawRect(dst, screenWidth-graphicsWidth, 0, graphicsWidth, screenHeight, color.RGBA{0xff, 0xff, 0xff, 0xff})
+	grafik.Draw(dst)
 	g.button.Draw(dst)
 	
 	if !gameRunning { 
 		userInt.Draw(dst)
 	} else {
 		drawGame(g,dst)
-		
-		// Text im Fenster
-		msg := fmt.Sprintf("FPS: %0.2f\n Essen:\t %d \n Hasen:\t%d \n Füchse:\t%d ",
-			ebiten.ActualFPS(), len(food), len(bunnies), len(fuechse))
-		ebitenutil.DebugPrint(dst, msg)
 	}
 }
 
@@ -292,14 +292,15 @@ func main() {
 		counter: 0,
 	}
 
-	welt = world.New(screenWidth, screenHeight - buttonHeight, scale, tilesImage)
+	welt = world.New(screenWidth - graphicsWidth, screenHeight, scale, tilesImage)
 	userInt = ui.New()
+	grafik = graphics.New(screenWidth-graphicsWidth,0)
 
 	resetGrass()
 	resetBunnies()
 	resetCats()
 	resetFoxes()
-	
+		
 	g.button = &Button{
 		x:	  screenWidth - buttonWidth - buttonPadding,
 		y:	  screenHeight - buttonPadding - buttonHeight,

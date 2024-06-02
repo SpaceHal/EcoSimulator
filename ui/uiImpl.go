@@ -272,7 +272,7 @@ func New() *data {
 		x: leftIndent,
 		y: lineSpacingInPixels*10,
 		maxValue: 30,
-		textBase: "Anzahl Fuchse: ",
+		textBase: "Anzahl Füchse: ",
 		currentValue: NumberOfFoxes,
 		active: true,
 	}
