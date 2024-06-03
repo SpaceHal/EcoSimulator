@@ -29,25 +29,19 @@ const (
 var (
 	colorGrass = color.RGBA{0,150,0,255}
 	colorRabbit = color.RGBA{120,120,120,255}
+	colorCat = color.RGBA{0,0,0,255}
 	colorFox = color.RGBA{180,50,50,255}
 )
 
 var (
 	historyRabbits []int = make([]int,nPoints)
+	historyCats	   []int = make([]int,nPoints)
 	historyFoxes   []int = make([]int,nPoints)
 	historyGrass   []int = make([]int,nPoints)
-//	uiImage      *ebiten.Image
 	faceSource 	   *text.GoTextFaceSource
 )
 
 func init() {
-/*	// Decode an image from the image file's byte slice.
-	img, _, err := image.Decode(bytes.NewReader(images.UI_png))
-	if err != nil {
-		log.Fatal(err)
-	}
-	uiImage = ebiten.NewImageFromImage(img)
-*/	
 	s, err := text.NewGoTextFaceSource(bytes.NewReader(goregular.TTF))
 	if err != nil {
 		log.Fatal(err)
@@ -98,6 +92,7 @@ func (u *data) Draw(dst *ebiten.Image) {
 
 	u.drawLine(dst,historyGrass,colorGrass)
 	u.drawLine(dst,historyRabbits,colorRabbit)
+	u.drawLine(dst,historyCats,colorCat)
 	u.drawLine(dst,historyFoxes,colorFox)
 	
 	var x,y float64 
@@ -105,11 +100,13 @@ func (u *data) Draw(dst *ebiten.Image) {
 	y = u.y+graphHeight+padding*3
 	drawText(dst,x,y,colorGrass,"Grassflächen: "+strconv.Itoa(historyGrass[nPoints-1]))
 	drawText(dst,x,y+padding*2,colorRabbit,"Hasen: "+strconv.Itoa(historyRabbits[nPoints-1]))
-	drawText(dst,x,y+padding*4,colorFox,"Füchse: "+strconv.Itoa(historyFoxes[nPoints-1]))
+	drawText(dst,x,y+padding*4,colorCat,"Katzen: "+strconv.Itoa(historyCats[nPoints-1]))
+	drawText(dst,x,y+padding*6,colorFox,"Füchse: "+strconv.Itoa(historyFoxes[nPoints-1]))
 }
 
-func (u *data) Update(nG,nR,nF int) {
+func (u *data) Update(nG,nR,nC,nF int) {
 	historyGrass = append(historyGrass[1:],nG)
 	historyRabbits = append(historyRabbits[1:],nR)
+	historyCats = append(historyCats[1:],nC)
 	historyFoxes = append(historyFoxes[1:],nF)
 }

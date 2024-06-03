@@ -215,7 +215,7 @@ func (g *Game) Update() error {
 	}
 	fuechse = livingFuechse
 
-	grafik.Update(len(food),len(bunnies),len(fuechse))
+	grafik.Update(len(food),len(bunnies),len(katzen),len(fuechse))
 	return nil
 }
 

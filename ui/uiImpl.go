@@ -161,6 +161,7 @@ func New() *data {
 	u := &data {
 		nGrass:	  NumberOfGrass,
 		nBunnies: NumberOfBunnies,
+		nCats:	  NumberOfCats,
 		nFoxes:	  NumberOfFoxes,
 	}
 	
@@ -234,8 +235,10 @@ func New() *data {
 	u.checkBoxCats.onCheckChanged = func(c *CheckBox) {
 		if c.checked {
 			u.nCats = NumberOfCats
+			u.sliderCats.active = true
 		} else {
 			u.nCats = 0
+			u.sliderCats.active = false
 		}
 	}
 		
@@ -245,6 +248,7 @@ func New() *data {
 		maxValue: 50,
 		textBase: "Anzahl Katzen: ",
 		currentValue: NumberOfCats,
+		active: true,
 	}
 	
 	u.sliderCats.onSliderChanged = func(s *Slider) {

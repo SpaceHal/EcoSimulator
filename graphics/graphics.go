@@ -14,5 +14,5 @@ type Graphics interface {
 	// Erg.: -
 	Draw(dst *ebiten.Image)
 	
-	Update(nG,nR,nF int)
+	Update(nG,nR,nC,nF int)
 }
