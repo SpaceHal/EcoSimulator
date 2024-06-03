@@ -48,7 +48,7 @@ func init() {
 
 // Vor.: -
 // Erg.: ein neuer Welt
-func New(width float32, height float32, img *ebiten.Image) *data {
+func New(width float32, height float32, scale float32, img *ebiten.Image) *data {
 	wo := &data{
 		width:    width,
 		height:   height,
@@ -61,7 +61,7 @@ func New(width float32, height float32, img *ebiten.Image) *data {
 		tileSize: 16,
 
 		//tilesImage: img,
-		scale: 2,
+		scale: scale,
 
 		// Karte mit zwei Ebenen, wo welche Tiles abgebildet werden.
 		// Die Tiles (16x16) werden von oben links der Reihe nach durchgezählt.
