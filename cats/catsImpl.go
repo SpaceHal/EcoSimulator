@@ -60,8 +60,6 @@ func (a *data) GetOffspring() *data {
 		a.SetDateOfLastBirth(a.GetAge() + rand.Intn(a.GetMatureAge()) + a.GetMatureAge())
 
 		nCat := New(a.GetWorld())
-		//fmt.Println("Geburt Fuchs: Eltern-Energy", a.GetHealth(), ", E-Alter", a.GetAge(), ", Kind-Energy", nCat.GetHealth(), ", K-Alter", nCat.GetAge())
-
 		return nCat
 	}
 	return nil

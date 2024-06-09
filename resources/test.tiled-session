@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "grass.tsx",
+    "activeFile": "",
     "expandedProjectPaths": [
         "."
     ],
@@ -20,12 +20,16 @@
             "scaleInDock": 1,
             "scaleInEditor": 4.09
         },
+        "cat.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 4.09
+        },
         "grass.tsx": {
             "scaleInDock": 2.8169,
             "scaleInEditor": 4.09
         },
         "tileSheet.tsx": {
-            "scaleInDock": 3,
+            "scaleInDock": 2,
             "scaleInEditor": 4.09
         },
         "world.tmj": {
@@ -58,15 +62,17 @@
         "grass.tsx",
         "Hills.tsx",
         "Tilled_Dirt.tsx",
-        "Water.tsx"
+        "Water.tsx",
+        "cat.tsx"
     ],
     "project": "test.tiled-project",
     "recentFiles": [
         "world.tmx",
-        "Water.tsx",
-        "Tilled_Dirt.tsx",
-        "Hills.tsx",
         "grass.tsx",
+        "Hills.tsx",
+        "Tilled_Dirt.tsx",
+        "Water.tsx",
+        "cat.tsx",
         "tileSheet.tsx",
         "world.tmj"
     ],
