@@ -15,30 +15,30 @@ import (
 )
 
 type data struct {
-	nCats           int
-	nBunnies        int
-	nFoxes          int
-	nGrass          int
-	checkBoxGrass   checkboxes.Checkbox
-	checkBoxBunnies checkboxes.Checkbox
-	checkBoxCats    checkboxes.Checkbox
-	checkBoxFoxes   checkboxes.Checkbox
-	sliderGrass     sliders.Slider
-	sliderBunnies   sliders.Slider
-	sliderCats      sliders.Slider
-	sliderFoxes     sliders.Slider
+	nCats 		int
+	nBunnies  	int
+	nFoxes		int
+	nGrass  	int
+	cbGrass   	checkboxes.Checkbox
+	cbBunnies 	checkboxes.Checkbox
+	cbCats    	checkboxes.Checkbox
+	cbFoxes   	checkboxes.Checkbox
+	sGrass    	sliders.Slider
+	sBunnies  	sliders.Slider
+	sCats     	sliders.Slider
+	sFoxes    	sliders.Slider
 }
 
 var (
-	NumberOfCats    = 5
-	NumberOfBunnies = 10
-	NumberOfFoxes   = 5
-	NumberOfGrass   = 20
 	uiImage         *ebiten.Image
 	uiFaceSource    *text.GoTextFaceSource
 )
 
 const (
+	NumberOfCats    = 5
+	NumberOfBunnies = 10
+	NumberOfFoxes   = 5
+	NumberOfGrass   = 20
 	padding             = 8
 	uiFontSize          = 16
 	lineSpacingInPixels = 60
@@ -80,68 +80,68 @@ func New() *data {
 		nFoxes:   NumberOfFoxes,
 	}
 
-	u.checkBoxGrass = checkboxes.New(leftIndent,lineSpacingInPixels * 3,"Grass",true)
-	u.checkBoxGrass.SetOnClicked(func() {
-		if u.checkBoxGrass.IsChecked() {
+	u.cbGrass = checkboxes.New(leftIndent,lineSpacingInPixels * 3,"Grass",true)
+	u.cbGrass.SetOnClicked(func() {
+		if u.cbGrass.IsChecked() {
 			u.nGrass = NumberOfGrass
-			u.sliderGrass.SetActive(true)
+			u.sGrass.SetActive(true)
 		} else {
 			u.nGrass = 0
-			u.sliderGrass.SetActive(false)
+			u.sGrass.SetActive(false)
 		}
 	})
 
-	u.sliderGrass = sliders.New(leftIndent,lineSpacingInPixels * 4,NumberOfGrass,100,"Anzahl Grassflächen: ",true)
-	u.sliderGrass.SetOnMoved(func() {
-		u.nGrass = u.sliderGrass.GetValue()
+	u.sGrass = sliders.New(leftIndent,lineSpacingInPixels * 4,NumberOfGrass,100,"Anzahl Grassflächen: ",true)
+	u.sGrass.SetOnMoved(func() {
+		u.nGrass = u.sGrass.GetValue()
 	})
 
-	u.checkBoxBunnies = checkboxes.New(leftIndent,lineSpacingInPixels * 5,"Hasen",true)
-	u.checkBoxBunnies.SetOnClicked(func() {
-		if u.checkBoxBunnies.IsChecked() {
+	u.cbBunnies = checkboxes.New(leftIndent,lineSpacingInPixels * 5,"Hasen",true)
+	u.cbBunnies.SetOnClicked(func() {
+		if u.cbBunnies.IsChecked() {
 			u.nBunnies = NumberOfBunnies
-			u.sliderBunnies.SetActive(true)
+			u.sBunnies.SetActive(true)
 		} else {
 			u.nBunnies = 0
-			u.sliderBunnies.SetActive(false)
+			u.sBunnies.SetActive(false)
 		}
 	})
 
-	u.sliderBunnies = sliders.New(leftIndent,lineSpacingInPixels * 6,NumberOfBunnies,50,"Anzahl Hasen: ",true)
-	u.sliderBunnies.SetOnMoved(func() {
-		u.nBunnies = u.sliderBunnies.GetValue()
+	u.sBunnies = sliders.New(leftIndent,lineSpacingInPixels * 6,NumberOfBunnies,50,"Anzahl Hasen: ",true)
+	u.sBunnies.SetOnMoved(func() {
+		u.nBunnies = u.sBunnies.GetValue()
 	})
 
-	u.checkBoxCats = checkboxes.New(leftIndent,lineSpacingInPixels * 7,"Katzen",true)
-	u.checkBoxCats.SetOnClicked(func() {
-		if u.checkBoxCats.IsChecked() {
+	u.cbCats = checkboxes.New(leftIndent,lineSpacingInPixels * 7,"Katzen",true)
+	u.cbCats.SetOnClicked(func() {
+		if u.cbCats.IsChecked() {
 			u.nCats = NumberOfCats
-			u.sliderCats.SetActive(true)
+			u.sCats.SetActive(true)
 		} else {
 			u.nCats = 0
-			u.sliderCats.SetActive(false)
+			u.sCats.SetActive(false)
 		}
 	})
 
-	u.sliderCats = sliders.New(leftIndent,lineSpacingInPixels * 8,NumberOfGrass,50,"Anzahl Katzen: ",true)
-	u.sliderCats.SetOnMoved(func() {
-		u.nCats = u.sliderCats.GetValue()
+	u.sCats = sliders.New(leftIndent,lineSpacingInPixels * 8,NumberOfGrass,50,"Anzahl Katzen: ",true)
+	u.sCats.SetOnMoved(func() {
+		u.nCats = u.sCats.GetValue()
 	})
 
-	u.checkBoxFoxes = checkboxes.New(leftIndent,lineSpacingInPixels * 9,"Fuechse",true)
-	u.checkBoxFoxes.SetOnClicked(func() {
-		if u.checkBoxFoxes.IsChecked() {
+	u.cbFoxes = checkboxes.New(leftIndent,lineSpacingInPixels * 9,"Fuechse",true)
+	u.cbFoxes.SetOnClicked(func() {
+		if u.cbFoxes.IsChecked() {
 			u.nFoxes = NumberOfFoxes
-			u.sliderFoxes.SetActive(true)
+			u.sFoxes.SetActive(true)
 		} else {
 			u.nFoxes = 0
-			u.sliderFoxes.SetActive(false)
+			u.sFoxes.SetActive(false)
 		}
 	})
 
-	u.sliderFoxes = sliders.New(leftIndent,lineSpacingInPixels * 10,NumberOfFoxes,30,"Anzahl Füchse: ",true)
-	u.sliderFoxes.SetOnMoved(func() {
-		u.nFoxes = u.sliderFoxes.GetValue()
+	u.sFoxes = sliders.New(leftIndent,lineSpacingInPixels * 10,NumberOfFoxes,30,"Anzahl Füchse: ",true)
+	u.sFoxes.SetOnMoved(func() {
+		u.nFoxes = u.sFoxes.GetValue()
 	})
 
 	return u
@@ -172,23 +172,23 @@ func (u *data) Draw(dst *ebiten.Image) {
 	for i := 0; i < len(beschreibung); i++ {
 		drawText(dst, leftIndent, lineSpacingInPixels+float64(i*uiFontSize), uiFontSize, beschreibung[i])
 	}
-	u.checkBoxGrass.Draw(dst)
-	u.sliderGrass.Draw(dst)
-	u.checkBoxBunnies.Draw(dst)
-	u.sliderBunnies.Draw(dst)
-	u.checkBoxCats.Draw(dst)
-	u.sliderCats.Draw(dst)
-	u.checkBoxFoxes.Draw(dst)
-	u.sliderFoxes.Draw(dst)
+	u.cbGrass.Draw(dst)
+	u.sGrass.Draw(dst)
+	u.cbBunnies.Draw(dst)
+	u.sBunnies.Draw(dst)
+	u.cbCats.Draw(dst)
+	u.sCats.Draw(dst)
+	u.cbFoxes.Draw(dst)
+	u.sFoxes.Draw(dst)
 }
 
 func (u *data) Update() {
-	u.checkBoxGrass.Update()
-	u.sliderGrass.Update()
-	u.checkBoxBunnies.Update()
-	u.sliderBunnies.Update()
-	u.checkBoxCats.Update()
-	u.sliderCats.Update()
-	u.checkBoxFoxes.Update()
-	u.sliderFoxes.Update()
+	u.cbGrass.Update()
+	u.sGrass.Update()
+	u.cbBunnies.Update()
+	u.sBunnies.Update()
+	u.cbCats.Update()
+	u.sCats.Update()
+	u.cbFoxes.Update()
+	u.sFoxes.Update()
 }

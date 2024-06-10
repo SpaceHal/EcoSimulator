@@ -13,17 +13,17 @@ type Checkbox interface {
 	Draw(dst *ebiten.Image)
 	
 	// Vor.: -
+	// Eff.: Das Checkbox wird aktualisiert.
+	// Erg.: -
+	Update()
+
+	// Vor.: -
 	// Eff.: -
 	// Erg.: Liefert den aktuellen Status des Checkboxes
 	IsChecked() bool
 	
 	// Vor.: -
-	// Eff.: Das Checkbox wird aktualisiert.
-	// Erg.: -
-	Update()
-	
-	// Vor.: -
 	// Eff.: Die auszurufende Funktion beim Clicken auf das Checkbox wird gespeichert. 
 	// Erg.: -
-	SetOnClicked(f func ())
+	SetOnClicked(f func())
 }
