@@ -4,6 +4,7 @@ import (
 	"image"
 	"image/color"
 	"log"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -16,14 +17,15 @@ var (
 )
 
 type data struct {
-	width, height float32
-	tileSize      int     // Ursprüngliche Kachelgröße (z.B. 16x16), wird mit `scale` skaliert
-	scale         float32 // Skaliert das Hintergrundbild
-	numTileX      int     // Anzahle der Kacheln pro Zeile
-	numTileY      int     // Anzahle der Kacheln pro Spalte
-	coastMg       float32 // Entfernung der Küste auf den Kacheln zur Kachelwand ohne Skalierung
-	margin        float32 // Entfernung der Küste auf den Kacheln zur Kachelwand ohne Skalierung
-	r, g, b, a    uint8
+	width, height  float32
+	tileSize       int     // Ursprüngliche Kachelgröße (z.B. 16x16)
+	scaledTileSize int     // skalierte Kachelgröße
+	scale          float32 // Skaliert das Hintergrundbild
+	numTileX       int     // Anzahle der Kacheln pro Zeile
+	numTileY       int     // Anzahle der Kacheln pro Spalte
+	coastMg        float32 // Entfernung der Küste auf den Kacheln zur Kachelwand ohne Skalierung
+	margin         float32 // Entfernung der Küste auf den Kacheln zur Kachelwand ohne Skalierung
+	r, g, b, a     uint8
 
 	layers [][]int
 
@@ -114,8 +116,9 @@ func New(width float32, height float32, scale float32, img *ebiten.Image) *data 
 		},
 	}
 
-	wo.numTileX = int(wo.width) / (int(wo.tileSize) * int(wo.scale))
-	wo.numTileY = int(wo.height) / (int(wo.tileSize) * int(wo.scale))
+	wo.scaledTileSize = int(math.Floor(float64(wo.tileSize) * float64(wo.scale)))
+	wo.numTileX = int(wo.width) / wo.scaledTileSize
+	wo.numTileY = int(wo.height) / wo.scaledTileSize
 
 	return wo
 }
@@ -150,13 +153,13 @@ func (wo *data) GetDebug() bool {
 }
 
 func (wo *data) GetXYTile(x, y int) (tileX, tileY int) {
-	tileX = x / (int(wo.tileSize) * int(wo.scale))
-	tileY = y / (int(wo.tileSize) * int(wo.scale))
+	tileX = x / wo.scaledTileSize
+	tileY = y / wo.scaledTileSize
 	return
 }
 
 func (wo *data) GetTileSizeScaled() int {
-	return int(wo.tileSize) * int(wo.scale)
+	return wo.scaledTileSize
 }
 
 // Vor.:
@@ -240,9 +243,9 @@ func (wo *data) Margin() float32 {
 }
 
 func (wo *data) ToggleGround(mx, my int) {
-	tileX := mx / (int(wo.tileSize) * int(wo.scale))
-	tileY := my / (int(wo.tileSize) * int(wo.scale))
 
+	tileX := mx / wo.scaledTileSize
+	tileY := my / wo.scaledTileSize
 	wo.toggle(tileX, tileY)
 
 	// Die Nachbarfelder aktualisieren
