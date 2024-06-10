@@ -27,7 +27,7 @@ const (
 )
 
 var (
-	colorGrass = color.RGBA{0,150,0,255}
+	colorGrass = color.RGBA{10,150,10,255}
 	colorRabbit = color.RGBA{120,120,120,255}
 	colorCat = color.RGBA{0,0,0,255}
 	colorFox = color.RGBA{180,50,50,255}

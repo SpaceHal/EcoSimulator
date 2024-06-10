@@ -6,6 +6,6 @@ import (
 )
 
 type Fox interface {
-	entity.Animal
+	entity.Entity
 	Update(others *[]Fox, preys *[]rabbits.Rabbit) (offSpring *data)
 }

@@ -7,6 +7,6 @@ import (
 )
 
 type Cat interface {
-	entity.Animal
+	entity.Entity
 	Update(others *[]Cat, preys1 *[]rabbits.Rabbit, preys2 *[]grass.Grass) (offSpring *data)
 }

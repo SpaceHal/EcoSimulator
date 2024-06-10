@@ -13,19 +13,13 @@ import (
 
 type vec = ve.Vector //  Vektoren
 
-// LivingEntity defines the basic life-like functions
-type LivingEntity interface {
-	IsAlive() bool
-	Update()
-}
-
 // Vor.: -
 // Erg.: ein neues Tier
-// New (w world.World, x, y float64) *data // *data erfüllt das Interface Animal
+// New (w world.World, x, y float64) *data // *data erfüllt das Interface Entity
 
-type Animal interface {
+type Entity interface {
 	// Die neue Position e.pos aus e.vel und e.acc bestimmen.
-	//Update(others *[]Animal) (offSpring *data)
+	//Update(others *[]Entity) (offSpring *data)
 
 	// Vor.: -
 	// Eff.: -
@@ -48,11 +42,11 @@ type Animal interface {
 	GetWorld() *world.World
 
 	/*
-		GetPreys() *[]Animal
+		GetPreys() *[]Entity
 		GetNumOfPreys() int
-		GetPredators() *[]Animal
-		SetPreys(preys *[]Animal)
-		SetPredators(preds *[]Animal)
+		GetPredators() *[]Entity
+		SetPreys(preys *[]Entity)
+		SetPredators(preds *[]Entity)
 	*/
 
 	GetMatureAge() int
@@ -60,7 +54,7 @@ type Animal interface {
 	SetViewAngle(ang float64)
 
 	SetMoveable(m bool)
-	ApplyMove(others *[]Animal, preys *[]Animal)
+	ApplyMove(others *[]Entity, preys *[]Entity)
 
 	// Vor.: -
 	// Eff.: Das Bild des Tieres wird durch die angegebene Datei ersetzt.
@@ -81,7 +75,7 @@ type Animal interface {
 	// Eff.: ?
 	// Erg.: Splice mit Objekten (seen) und deren Abstandsvektoren (direction),
 	// die im Sichtfeld des Objekts liegen
-	SeeOthers(others *[]Animal) (*[]Animal, *[]vec)
+	SeeOthers(others *[]Entity) (*[]Entity, *[]vec)
 
 	// Vor.: -
 	// Eff.: Das Tier ist gezeichnet.
@@ -97,10 +91,10 @@ type Animal interface {
 	// Eff.: -
 	// Erg.: Prueft, ob das Tier die gleichen Eigenschaften hat wie das
 	// 		 uebergebenen Tier.
-	IsSame(b *AnimalData) bool
+	IsSame(b *EntityData) bool
 
 	// Vor.:
 	// Eff.: Das Objekt beschleunigt von anderen Objekten, die im Sichtfeld liegen weg
 	// Erg.:
-	//avoidCollisionWithSeenObjects(others []Animal)
+	//avoidCollisionWithSeenObjects(others []Entity)
 }

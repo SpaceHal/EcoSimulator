@@ -30,5 +30,8 @@ type UI interface {
 	// Erg.: -
 	Draw(dst *ebiten.Image)
 	
+	// Vor.: -
+	// Eff.: Der UI wird aktualisiert.
+	// Erg.: -
 	Update()
 }

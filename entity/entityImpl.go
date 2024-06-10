@@ -94,10 +94,10 @@ func (a *DrawableData) SetImageFromFile(file string, size, x, y int) {
 }
 
 // Vor.: ?
-// Eff.: Erstellt ein Bild für ein Tier. Das Bild wird in animal.img gespeichert und
-// später mit Animal.DrawShape() jedes mal neu gezeichnet.
+// Eff.: Erstellt ein Bild für ein Tier. Das Bild wird in entity.img gespeichert und
+// später mit Entity.DrawShape() jedes mal neu gezeichnet.
 // Erg.:
-func (a *DrawableData) makeAnimal() {
+func (a *DrawableData) makeEntity() {
 	a.img = ebiten.NewImage(int(a.imgHeight), int(a.imgHeight))
 	vector.DrawFilledCircle(a.img, a.imgHeight/2, a.imgHeight/2, a.imgHeight/2, color.NRGBA{a.r, a.g, a.b, a.a}, true)
 }
@@ -106,7 +106,7 @@ func (a *DrawableData) SetColorRGB(r, g, b uint8) {
 	a.r = r
 	a.g = g
 	a.b = b
-	a.makeAnimal()
+	a.makeEntity()
 }
 
 // Liefert die aktuelle Position
@@ -155,7 +155,7 @@ func NewMoveable(w *world.World) MoveableData {
 }
 
 // Vor.: ?
-// Eff.: Bestimmt den Geschwindigkeitsvektor Animal.vel
+// Eff.: Bestimmt den Geschwindigkeitsvektor Entity.vel
 // Erg.:
 func (a *MoveableData) randomStep() {
 
@@ -238,16 +238,16 @@ func (a *HealthData) IncAge() {
 }
 
 // ///////////////////////////////////////////////////
-//	AnimalData
+//	EntityData
 // ///////////////////////////////////////////////////
 
-type AnimalData struct {
+type EntityData struct {
 	//DrawableData
 	MoveableData
 	HealthData
 
-	//preys     *[]Animal // die Beute des Tiers (was wird gegessen)
-	//predators *[]Animal // die Jäger des Tiers (wovor wird geflüchtet)
+	//preys     *[]Entity // die Beute des Tiers (was wird gegessen)
+	//predators *[]Entity // die Jäger des Tiers (wovor wird geflüchtet)
 
 	imgDebug *ebiten.Image // das zu zeigende Bild
 
@@ -255,9 +255,9 @@ type AnimalData struct {
 	font  *text.GoTextFaceSource // Font für Debug-Text
 }
 
-func New(w *world.World) *AnimalData {
+func New(w *world.World) *EntityData {
 
-	a := &AnimalData{
+	a := &EntityData{
 		MoveableData: NewMoveable(w),
 		HealthData:   NewHealth(),
 		debug:        true,
@@ -274,71 +274,71 @@ func New(w *world.World) *AnimalData {
 		a.imgDebug = ebiten.NewImage(int(20*size), int(20*size))
 	}
 
-	a.makeAnimal()
+	a.makeEntity()
 
 	return a
 }
 
-func (a *AnimalData) IsSame(b *AnimalData) bool {
+func (a *EntityData) IsSame(b *EntityData) bool {
 	return a == b
 }
 
-func (a *AnimalData) SetMoveable(m bool) {
+func (a *EntityData) SetMoveable(m bool) {
 	a.moveable = m
 }
 
-func (a *AnimalData) SetViewAngle(ang float64) {
+func (a *EntityData) SetViewAngle(ang float64) {
 	a.viewAngle = ang
 }
 
 /*
-func (a *AnimalData) SetPreys(preys *[]Animal) {
+func (a *EntityData) SetPreys(preys *[]Entity) {
 	a.preys = preys
 }
-func (a *AnimalData) GetNumOfPreys() int {
+func (a *EntityData) GetNumOfPreys() int {
 	return len(*a.preys)
 }
 
-func (a *AnimalData) SetPredators(predators *[]Animal) {
+func (a *EntityData) SetPredators(predators *[]Entity) {
 	a.predators = predators
 }
-func (a *AnimalData) GetPreys() *[]Animal {
+func (a *EntityData) GetPreys() *[]Entity {
 	return a.preys
 }
-func (a *AnimalData) GetPredators() *[]Animal {
+func (a *EntityData) GetPredators() *[]Entity {
 	return a.predators
 }
 */
 
-func (a *AnimalData) SetMaxVel(v float64) {
+func (a *EntityData) SetMaxVel(v float64) {
 	a.maxVel = v
 }
 
-func (a *AnimalData) SetViewMag(mag float64) {
+func (a *EntityData) SetViewMag(mag float64) {
 	a.viewMag = mag
 }
 
-func (a *AnimalData) GetAge() int {
+func (a *EntityData) GetAge() int {
 	return a.age
 }
 
-func (a *AnimalData) GetDateOfLastBirth() int {
+func (a *EntityData) GetDateOfLastBirth() int {
 	return a.birthNotBefore
 }
-func (a *AnimalData) SetDateOfLastBirth(d int) {
+func (a *EntityData) SetDateOfLastBirth(d int) {
 	a.birthNotBefore = d
 }
-func (a *AnimalData) GetMatureAge() int {
+func (a *EntityData) GetMatureAge() int {
 	return a.matureAge
 }
 
-func (a *AnimalData) GetWorld() *world.World {
+func (a *EntityData) GetWorld() *world.World {
 	return a.w
 }
 
 // Die neue Position e.pos aus e.vel und e.acc bestimmen und die Lebensenergie aktualisieren
 /*
-func (a *data) Update(others *[]Animal) (offSpring *data) {
+func (a *data) Update(others *[]Entity) (offSpring *data) {
 	a.age++
 	if a.moveable {
 		a.energy -= a.energyLoss
@@ -370,10 +370,10 @@ func (a *data) GetOffspring() *data {
 */
 
 // Vor.:
-// Eff.: Die neue Position animal.pos ist bestimmt. Das Überlappen von
+// Eff.: Die neue Position Entity.pos ist bestimmt. Das Überlappen von
 // Objekten wird vermieden
 // Erg.:
-func (a *AnimalData) ApplyMove(others *[]Animal, preys *[]Animal) {
+func (a *EntityData) ApplyMove(others *[]Entity, preys *[]Entity) {
 
 	a.randomStep()
 	if preys != nil {
@@ -410,7 +410,7 @@ func (a *AnimalData) ApplyMove(others *[]Animal, preys *[]Animal) {
 
 }
 
-func (a *AnimalData) avoidCollisionWithSeenObjects(others *[]Animal) {
+func (a *EntityData) avoidCollisionWithSeenObjects(others *[]Entity) {
 	avg := vec{0, 0}
 	_, dirs := a.SeeOthers(others)
 	for _, dir := range *dirs {
@@ -426,26 +426,26 @@ func (a *AnimalData) avoidCollisionWithSeenObjects(others *[]Animal) {
 	a.vel = a.vel.Unit().Scale(a.maxVel).Add(z)
 }
 
-//func (a *AnimalData) flee(others *[]Animal) {}
+//func (a *EntityData) flee(others *[]Entity) {}
 
 // Vor.:
 // Eff.: Bewegt sich in Richtung des nächsten im Sichtfeld gelegenen Tiers/Essens
 // Erg.:
 
-func (a *AnimalData) searchFood(others *[]Animal) {
+func (a *EntityData) searchFood(others *[]Entity) {
 	if others == nil || a.health > 500 {
 		return
 	}
 
-	seenAnimals, directions := a.SeeOthers(others)
+	seenEntities, directions := a.SeeOthers(others)
 	iClosest := 0
-	for i := 0; i < len(*seenAnimals); i++ {
+	for i := 0; i < len(*seenEntities); i++ {
 		if (*directions)[i].Magnitude() < (*directions)[iClosest].Magnitude() {
 			iClosest = i
 		}
 	}
 
-	if len(*seenAnimals) > 0 {
+	if len(*seenEntities) > 0 {
 		huntDir := (*directions)[iClosest].Unit()
 		huntDir = huntDir.Scale(a.maxAccPhi * 10)
 		z := a.vel.Unit().Scale(a.ahead)
@@ -455,7 +455,7 @@ func (a *AnimalData) searchFood(others *[]Animal) {
 }
 
 // BUG: Irgendetwas stimmt hier nicht ...
-func (a *AnimalData) eatFood(others *[]Animal) {
+func (a *EntityData) eatFood(others *[]Entity) {
 	if a.health > 500 {
 		return
 	}
@@ -475,7 +475,7 @@ func (a *AnimalData) eatFood(others *[]Animal) {
 // Eff.: Addiert in der Nähe vom Wasser ein Geschwindigkeitskomponente vom Wasser weg
 // auf die aktuelle Geschwindigkeit.
 // Erg.:
-func (a *AnimalData) repelFromWater() {
+func (a *EntityData) repelFromWater() {
 	// Wenn das Objekt in die Nähe des Bildschirmrandes kommt,
 	// wird es senkrecht dazu beschleunigt (dreht also um)
 	// TODO: Die Beschleunigung vom Rand weg sollte Proportional zur Entfernung zum Rand sein.
@@ -529,9 +529,9 @@ func (a *AnimalData) repelFromWater() {
 // Eff.: ?
 // Erg.: Splice mit Objekten (seen) und deren Abstandsvektoren (direction),
 // die im Sichtfeld des Objekts liegen
-func (a *AnimalData) SeeOthers(others *[]Animal) (*[]Animal, *[]vec) {
+func (a *EntityData) SeeOthers(others *[]Entity) (*[]Entity, *[]vec) {
 	inView := false
-	var seen []Animal
+	var seen []Entity
 	var direction []vec
 
 	for _, other := range *others {
@@ -551,11 +551,11 @@ func (a *AnimalData) SeeOthers(others *[]Animal) (*[]Animal, *[]vec) {
 	return &seen, &direction
 }
 
-func (a *AnimalData) Draw(screen *ebiten.Image) {
-	a.drawAnimal(screen)
+func (a *EntityData) Draw(screen *ebiten.Image) {
+	a.drawEntity(screen)
 }
 
-func (a *AnimalData) drawStats(screen *ebiten.Image) {
+func (a *EntityData) drawStats(screen *ebiten.Image) {
 
 	if a.moveable {
 		optFont := &text.GoTextFace{
@@ -584,7 +584,7 @@ func (a *AnimalData) drawStats(screen *ebiten.Image) {
 	}
 }
 
-func (a *AnimalData) drawView() *ebiten.DrawImageOptions {
+func (a *EntityData) drawView() *ebiten.DrawImageOptions {
 	w := float32(a.imgDebug.Bounds().Dx())
 	h := float32(a.imgDebug.Bounds().Dy())
 	a.imgDebug.Clear()
@@ -620,7 +620,7 @@ func (a *AnimalData) drawView() *ebiten.DrawImageOptions {
 }
 
 /*
-func (a *AnimalData) drawDebug(screen *ebiten.Image) {
+func (a *EntityData) drawDebug(screen *ebiten.Image) {
 	a.imgDebug.Clear()
 	w := float32(a.imgDebug.Bounds().Dx())
 	h := float32(a.imgDebug.Bounds().Dy())
@@ -640,7 +640,7 @@ func (a *AnimalData) drawDebug(screen *ebiten.Image) {
 // Vor.: ?
 // Eff.: Zeichnet ein Tier als Vektorgrafik mit Sichtfeld und Geschwindigkeitsvektor
 // Erg.: ?
-func (a *AnimalData) drawAnimal(screen *ebiten.Image) {
+func (a *EntityData) drawEntity(screen *ebiten.Image) {
 	if a.moveable {
 		if (*a.w).GetDebug() {
 			opD := a.drawView()
@@ -665,7 +665,7 @@ func (a *AnimalData) drawAnimal(screen *ebiten.Image) {
 // Vor.: ?
 // Eff.: Ein Kreisbogen wird erzeugt, dessen Mittelpunkt mittig in `img` gespeichert wird.
 // Erg.:
-func (a *AnimalData) makeArc(img *ebiten.Image, radius float32, startAngle, endAngle float32, c color.NRGBA, line bool) {
+func (a *EntityData) makeArc(img *ebiten.Image, radius float32, startAngle, endAngle float32, c color.NRGBA, line bool) {
 	w := float32(img.Bounds().Dx())
 	h := float32(img.Bounds().Dy())
 
