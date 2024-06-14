@@ -7,5 +7,5 @@ import "ecosim/entity"
 // New (x, y int) *data // *data erfüllt das Interface Grass
 
 type Grass interface {
-	entity.Animal
+	entity.Entity
 }

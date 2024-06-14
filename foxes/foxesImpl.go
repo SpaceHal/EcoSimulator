@@ -9,12 +9,12 @@ import (
 )
 
 type data struct {
-	entity.Animal
+	entity.Entity
 }
 
 // Type Conversion
-func ToAnimals(foxes *[]Fox) *[]entity.Animal {
-	var animals []entity.Animal
+func ToAnimals(foxes *[]Fox) *[]entity.Entity {
+	var animals []entity.Entity
 	for _, f := range *foxes {
 		animals = append(animals, f)
 	}
@@ -24,7 +24,7 @@ func ToAnimals(foxes *[]Fox) *[]entity.Animal {
 func New(w *world.World) *data {
 	var f *data
 	f = new(data)
-	(*f).Animal = entity.New(w)
+	(*f).Entity = entity.New(w)
 
 	f.SetImageFromFile("foxes/fox.png", 0, 0, 0)
 	//f.SetColorRGB(204, 20, 204)

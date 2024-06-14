@@ -6,7 +6,7 @@ import (
 )
 
 type Fox interface {
-	entity.Animal
+  entity.Entity
 
 	// Vor.: -
 	// Eff.: Die neue Postion, das aktuelle Alter und die Gesundheit ist bestimmt

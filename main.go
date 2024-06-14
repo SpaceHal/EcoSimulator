@@ -26,10 +26,10 @@ import (
 )
 
 var (
-	katzen       []cats.Cat       //[]animal.Animal
-	bunnies      []rabbits.Rabbit //[]animal.Animal
-	fuechse      []foxes.Fox      //[]animal.Animal
-	food         []grass.Grass    //[]animal.Animal
+	katzen       []cats.Cat       //[]entity.Entity
+	bunnies      []rabbits.Rabbit //[]entity.Entity
+	fuechse      []foxes.Fox      //[]entity.Entity
+	food         []grass.Grass    //[]entity.Entity
 	welt         world.World
 	userInt      ui.UI
 	grafik       graphics.Graphics

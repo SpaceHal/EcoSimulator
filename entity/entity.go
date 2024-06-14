@@ -14,13 +14,12 @@ type LivingEntity interface {
 	IsAlive() bool
 	Update()
 }
-
+  
 // Vor.: -
-// Erg.: ein neues Objekt
-// New (w world.World, x, y float64) *data
-
-type Animal interface {
-
+// Erg.: ein neues Tier
+// New (w world.World, x, y float64) *data // *data erfüllt das Interface Entity
+  
+type Entity interface {
 	// Vor.: -
 	// Eff.: -
 	// Erg.: True ist geliefert, wenn das Tier noch gesund ist und
@@ -92,6 +91,7 @@ type Animal interface {
 	// Erg.: Zeiger auf die Simulationswelt ist geliefert.
 	GetWorld() *world.World
 
+
 	// Vor.: -
 	// Eff.: Der Winkel des Sichfeld ist gesetzt
 	// Erg.: -
@@ -121,7 +121,7 @@ type Animal interface {
 	// Eff.: Das Objekt hat sich auf eine angrenzende Landfläche bewegt.
 	// Vermeidet dabei Kollisionen mit gleichen Objekten und vermeidet Wasser.
 	// Erg.: -
-	ApplyMove(others *[]Animal, preys *[]Animal)
+	ApplyMove(others *[]Entity, preys *[]Entity)
 
 	// Vor.: -
 	// Eff.: Das Bild des Tieres wird durch die angegebene Datei ersetzt.
@@ -138,7 +138,7 @@ type Animal interface {
 	// Eff.: -
 	// Erg.: Splice mit Objekten (seen) und deren Abstandsvektoren (direction),
 	// die im Sichtfeld des Objekts liegen ist geliefert.
-	SeeOthers(others *[]Animal) (*[]Animal, *[]vec)
+	SeeOthers(others *[]Entity) (*[]Entity, *[]vec)
 
 	// Vor.: -
 	// Eff.: Das Tier ist gezeichnet.
@@ -149,5 +149,10 @@ type Animal interface {
 	// Eff.: -
 	// Erg.: Prueft, ob das Tier die gleichen Eigenschaften hat wie das
 	// 		 uebergebenen Tier.
-	IsSame(b *AnimalData) bool
+	IsSame(b *EntityData) bool
+
+	// Vor.:
+	// Eff.: Das Objekt beschleunigt von anderen Objekten, die im Sichtfeld liegen weg
+	// Erg.:
+	//avoidCollisionWithSeenObjects(others []Entity)
 }
