@@ -5,14 +5,17 @@ import (
 )
 
 // Vor.: -
-// Erg.: neue Graphiken
+// Erg.: neue Liniendiagramme
 // New (x, y int) *data // *data erfüllt das Interface Graphics
 
 type Graphics interface {
 	// Vor.: -
-	// Eff.: Die Grafiken sind gezeichnet.
+	// Eff.: Die Liniendiagramme sind gezeichnet.
 	// Erg.: -
 	Draw(dst *ebiten.Image)
-	
-	Update(nG,nR,nC,nF int)
+
+	// Vor.: -
+	// Eff.: Neue Werte für die Liniendiagramme sind ergänzt
+	// Erg.: -
+	Update(nG, nR, nC, nF int)
 }

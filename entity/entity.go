@@ -1,9 +1,6 @@
 package entity
 
 import (
-	//"fmt"
-
-	//termC "github.com/fatih/color"
 	"ecosim/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -11,55 +8,119 @@ import (
 	ve "github.com/quartercastle/vector"
 )
 
-type vec = ve.Vector //  Vektoren
+type vec = ve.Vector
 
-// LivingEntity defines the basic life-like functions
 type LivingEntity interface {
 	IsAlive() bool
 	Update()
 }
 
 // Vor.: -
-// Erg.: ein neues Tier
-// New (w world.World, x, y float64) *data // *data erfüllt das Interface Animal
+// Erg.: ein neues Objekt
+// New (w world.World, x, y float64) *data
 
 type Animal interface {
-	// Die neue Position e.pos aus e.vel und e.acc bestimmen.
-	//Update(others *[]Animal) (offSpring *data)
 
 	// Vor.: -
 	// Eff.: -
-	// Erg.: True ist geliefert, wenn das Tier noch Lebensenergie besitzt.
+	// Erg.: True ist geliefert, wenn das Tier noch gesund ist und
+	// des Maximalalter nicht erreicht ist.
 	IsAlive() bool
 
+	// Vor.:-
+	// Eff.: Die Reduzierung der Gesundheit bei Zeitschritt ist gesetzt.
+	// Erg.:-
 	SetHealthLoss(e float64)
+
+	// Vor.:-
+	// Eff.: Die Gesundheit ist gesetzt.
+	// Erg.:-
 	SetHealth(e float64)
+
+	// Vor.:-
+	// Eff.:-
+	// Erg.: Die Gesundheit ist gegeben.
 	GetHealth() float64
+
+	// Vor.:-
+	// Eff.: Der Nähwert ist gesetzt.
+	// Erg.:-
 	SetHealthWhenEaten(e float64)
+
+	// Vor.:-
+	// Eff.:-
+	// Erg.: Der Nähwert ist gegeben.
 	GetHealthWhenEaten() float64
 
+	// Vor.:-
+	// Eff.:-
+	// Erg.: Das Alter ist gegeben.
 	GetAge() int
+
+	// Vor.: -
+	// Eff.: Das Alter ist im eins erhöht und die Gesundheit entsprechend `SetHealthLoss()` reduziert.
+	// Erg.: -
 	IncAge()
+
+	// Vor.:-
+	// Eff.: Die Geschlechtsreife ist gesetzt.
+	// Erg.:-
 	SetMatureAge(mAge int)
-	SetLifeSpan(ls int)
-	GetDateOfLastBirth() int
-	SetDateOfLastBirth(d int)
 
-	GetWorld() *world.World
-
-	/*
-		GetPreys() *[]Animal
-		GetNumOfPreys() int
-		GetPredators() *[]Animal
-		SetPreys(preys *[]Animal)
-		SetPredators(preds *[]Animal)
-	*/
-
+	// Vor.: -
+	// Eff.: -
+	// Erg.: Die Geschlechtsreife ist geliefert.
 	GetMatureAge() int
 
+	// Vor.: -
+	// Eff.: Das Höchstalter ist gesetzt.
+	// Erg.: -
+	SetLifeSpan(ls int)
+
+	// Vor.: -
+	// Eff.: -
+	// Erg.: Alter beim zuletzt erzeugten Nachwuchs ist geliefert
+	GetDateOfLastBirth() int
+
+	// Vor.: -
+	// Eff.: Alter beim zuletzt erzeugten Nachwuchs ist gesetzt
+	// Erg.: -
+	SetDateOfLastBirth(d int)
+
+	// Vor.: -
+	// Eff.: -
+	// Erg.: Zeiger auf die Simulationswelt ist geliefert.
+	GetWorld() *world.World
+
+	// Vor.: -
+	// Eff.: Der Winkel des Sichfeld ist gesetzt
+	// Erg.: -
 	SetViewAngle(ang float64)
 
+	// Vor.: -
+	// Eff.: Die Sichtweite ist gesetzt.
+	// Erg.: -
+	SetViewMag(mag float64)
+
+	// Vor.: -
+	// Eff.: Der Betrag der Maximalgeschwindigkeit ist gesetzt.
+	// Erg.: -
+	SetMaxVel(v float64)
+
+	// Vor.: -
+	// Eff.: -
+	// Erg.: Liefert die aktuelle Position des Objekts.
+	GetPosition() vec
+
+	// Vor.: -
+	// Eff.: Beweglichkeit eines Objektes ist gesetzt.
+	// Erg.: -
 	SetMoveable(m bool)
+
+	// Vor.: -
+	// Eff.: Das Objekt hat sich auf eine angrenzende Landfläche bewegt.
+	// Vermeidet dabei Kollisionen mit gleichen Objekten und vermeidet Wasser.
+	// Erg.: -
 	ApplyMove(others *[]Animal, preys *[]Animal)
 
 	// Vor.: -
@@ -73,14 +134,10 @@ type Animal interface {
 	// Erg.:
 	SetColorRGB(r, g, b uint8)
 
-	SetMaxVel(v float64)
-
-	SetViewMag(mag float64)
-
-	// Vor.: ?
-	// Eff.: ?
+	// Vor.: -
+	// Eff.: -
 	// Erg.: Splice mit Objekten (seen) und deren Abstandsvektoren (direction),
-	// die im Sichtfeld des Objekts liegen
+	// die im Sichtfeld des Objekts liegen ist geliefert.
 	SeeOthers(others *[]Animal) (*[]Animal, *[]vec)
 
 	// Vor.: -
@@ -90,17 +147,7 @@ type Animal interface {
 
 	// Vor.: -
 	// Eff.: -
-	// Erg.: Liefert die aktuelle Position des Tieres.
-	GetPosition() vec
-
-	// Vor.: -
-	// Eff.: -
 	// Erg.: Prueft, ob das Tier die gleichen Eigenschaften hat wie das
 	// 		 uebergebenen Tier.
 	IsSame(b *AnimalData) bool
-
-	// Vor.:
-	// Eff.: Das Objekt beschleunigt von anderen Objekten, die im Sichtfeld liegen weg
-	// Erg.:
-	//avoidCollisionWithSeenObjects(others []Animal)
 }

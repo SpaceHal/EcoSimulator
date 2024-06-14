@@ -39,7 +39,6 @@ func New(w *world.World) *data {
 	return r
 }
 
-// Die neue Position e.pos aus e.vel und e.acc bestimmen und die Lebensenergie aktualisieren
 func (a *data) Update(others *[]Rabbit, food *[]grass.Grass) (offSpring *data) {
 	a.IncAge()
 

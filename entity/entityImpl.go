@@ -25,7 +25,6 @@ var (
 	whiteSubImage = whiteImage.SubImage(image.Rect(1, 1, 2, 2)).(*ebiten.Image)
 )
 
-// Wird genau einmal aufgerufen, wenn das Packet verwendet wird
 func init() {
 	whiteImage.Fill(color.White)
 }
@@ -163,11 +162,11 @@ func (a *MoveableData) randomStep() {
 	z := a.vel.Unit().Scale(a.ahead)
 
 	// zufällige Richtungsänderung der Beschleunigung
-	// TODO: Perlin - Noise
+	// OPT: Perlin - Noise
 	a.accPhi = (rand.Float64()*2 - 1) * a.maxAccPhi // zufällliger Winkel 0 ... ??
 	a.acc = a.acc.Rotate(a.accPhi).Unit().Scale(a.ahead / 8)
 
-	// TODO: Die Länge von z (Ziehpunkt) variiert mit absVel
+	// OPT: Die Länge von z (Ziehpunkt) variiert mit absVel
 	z = z.Add(a.acc)
 
 	a.vel = a.vel.Unit().Scale(a.maxVel).Add(z)
@@ -229,9 +228,6 @@ func (a *HealthData) SetMatureAge(mAge int) {
 	a.matureAge = mAge
 }
 
-// Vor.:
-// Eff.: Das Alter ist im 1 erhöht, die Energie reduziert
-// Erg.:
 func (a *HealthData) IncAge() {
 	a.age++
 	a.health -= a.healthLoss
@@ -242,17 +238,12 @@ func (a *HealthData) IncAge() {
 // ///////////////////////////////////////////////////
 
 type AnimalData struct {
-	//DrawableData
 	MoveableData
 	HealthData
 
-	//preys     *[]Animal // die Beute des Tiers (was wird gegessen)
-	//predators *[]Animal // die Jäger des Tiers (wovor wird geflüchtet)
-
 	imgDebug *ebiten.Image // das zu zeigende Bild
-
-	debug bool
-	font  *text.GoTextFaceSource // Font für Debug-Text
+	debug    bool
+	font     *text.GoTextFaceSource // Font für Debug-Text
 }
 
 func New(w *world.World) *AnimalData {
@@ -291,25 +282,6 @@ func (a *AnimalData) SetViewAngle(ang float64) {
 	a.viewAngle = ang
 }
 
-/*
-func (a *AnimalData) SetPreys(preys *[]Animal) {
-	a.preys = preys
-}
-func (a *AnimalData) GetNumOfPreys() int {
-	return len(*a.preys)
-}
-
-func (a *AnimalData) SetPredators(predators *[]Animal) {
-	a.predators = predators
-}
-func (a *AnimalData) GetPreys() *[]Animal {
-	return a.preys
-}
-func (a *AnimalData) GetPredators() *[]Animal {
-	return a.predators
-}
-*/
-
 func (a *AnimalData) SetMaxVel(v float64) {
 	a.maxVel = v
 }
@@ -336,43 +308,6 @@ func (a *AnimalData) GetWorld() *world.World {
 	return a.w
 }
 
-// Die neue Position e.pos aus e.vel und e.acc bestimmen und die Lebensenergie aktualisieren
-/*
-func (a *data) Update(others *[]Animal) (offSpring *data) {
-	a.age++
-	if a.moveable {
-		a.energy -= a.energyLoss
-		a.randomStep()
-		if a.preys != nil {
-			a.searchFood(a.preys)
-			a.eatFood(a.preys)
-		}
-		a.avoidCollisionWithSeenObjects(others)
-		a.repelFromWater()
-
-		a.applyMove(others)  // <== ACHTUNG: hier ist jetzt alles für die Bewegung drin
-		offSpring = a.GetOffspring()
-	}
-	return
-}
-*/
-
-/*
-func (a *data) GetOffspring() *data {
-	if a.age > a.dateOfLastBirth {
-		a.dateOfLastBirth += rand.Intn(a.matureAge)
-		//fmt.Println("Neues Geburtsdatum:", a.dateOfLastBirth)
-		return New(a.w)
-	}
-	return nil
-
-}
-*/
-
-// Vor.:
-// Eff.: Die neue Position animal.pos ist bestimmt. Das Überlappen von
-// Objekten wird vermieden
-// Erg.:
 func (a *AnimalData) ApplyMove(others *[]Animal, preys *[]Animal) {
 
 	a.randomStep()
@@ -410,6 +345,36 @@ func (a *AnimalData) ApplyMove(others *[]Animal, preys *[]Animal) {
 
 }
 
+func (a *AnimalData) SeeOthers(others *[]Animal) (*[]Animal, *[]vec) {
+	inView := false
+	var seen []Animal
+	var direction []vec
+
+	for _, other := range *others {
+		delta := other.GetPosition().Sub(a.pos)
+		if !other.IsSame(a) && delta.Magnitude() < a.viewMag {
+
+			if math.Abs(a.vel.Angle(delta)) < a.viewAngle {
+				inView = inView || true
+				seen = append(seen, other)
+				direction = append(direction, delta.Clone())
+			}
+		} else {
+			inView = inView || false
+		}
+	}
+	a.inView = inView
+	return &seen, &direction
+}
+
+func (a *AnimalData) Draw(screen *ebiten.Image) {
+	a.drawAnimal(screen)
+}
+
+////////////////////////////////////////////////////////
+// 					Hilfsfunktionen
+////////////////////////////////////////////////////////
+
 func (a *AnimalData) avoidCollisionWithSeenObjects(others *[]Animal) {
 	avg := vec{0, 0}
 	_, dirs := a.SeeOthers(others)
@@ -426,12 +391,9 @@ func (a *AnimalData) avoidCollisionWithSeenObjects(others *[]Animal) {
 	a.vel = a.vel.Unit().Scale(a.maxVel).Add(z)
 }
 
-//func (a *AnimalData) flee(others *[]Animal) {}
-
 // Vor.:
 // Eff.: Bewegt sich in Richtung des nächsten im Sichtfeld gelegenen Tiers/Essens
 // Erg.:
-
 func (a *AnimalData) searchFood(others *[]Animal) {
 	if others == nil || a.health > 500 {
 		return
@@ -454,7 +416,10 @@ func (a *AnimalData) searchFood(others *[]Animal) {
 	}
 }
 
-// BUG: Irgendetwas stimmt hier nicht ...
+// Vor.: -
+// Eff.: Wenn das Objekt seine Beute berührt, erhält das Objekt Gesundheitspunkte
+// und die Gesundheit der Beute ist null.
+// Erg.: -
 func (a *AnimalData) eatFood(others *[]Animal) {
 	if a.health > 500 {
 		return
@@ -465,7 +430,6 @@ func (a *AnimalData) eatFood(others *[]Animal) {
 		dist := newPos.Sub(other.GetPosition())
 		if !other.IsSame(a) && dist.Magnitude() <= float64(a.imgHeight*1.0) {
 			other.SetHealth(0) //wurde gegessen
-			//fmt.Println(" >> Einer hat gegessen: ", i)
 			a.health += other.GetHealthWhenEaten()
 		}
 	}
@@ -478,7 +442,7 @@ func (a *AnimalData) eatFood(others *[]Animal) {
 func (a *AnimalData) repelFromWater() {
 	// Wenn das Objekt in die Nähe des Bildschirmrandes kommt,
 	// wird es senkrecht dazu beschleunigt (dreht also um)
-	// TODO: Die Beschleunigung vom Rand weg sollte Proportional zur Entfernung zum Rand sein.
+	// OPT: Die Beschleunigung vom Rand weg sollte Proportional zur Entfernung zum Rand sein.
 
 	n, no, o, so, s, sw, w, nw := (*a.w).GetTileBorders(int(a.pos[0]), int(a.pos[1]))
 	tileX, tileY := (*a.w).GetXYTile(int(a.pos.X()), int(a.pos.Y()))
@@ -525,36 +489,9 @@ func (a *AnimalData) repelFromWater() {
 	a.vel = a.vel.Add(repel)
 }
 
-// Vor.: ?
-// Eff.: ?
-// Erg.: Splice mit Objekten (seen) und deren Abstandsvektoren (direction),
-// die im Sichtfeld des Objekts liegen
-func (a *AnimalData) SeeOthers(others *[]Animal) (*[]Animal, *[]vec) {
-	inView := false
-	var seen []Animal
-	var direction []vec
-
-	for _, other := range *others {
-		delta := other.GetPosition().Sub(a.pos)
-		if !other.IsSame(a) && delta.Magnitude() < a.viewMag {
-
-			if math.Abs(a.vel.Angle(delta)) < a.viewAngle {
-				inView = inView || true
-				seen = append(seen, other)
-				direction = append(direction, delta.Clone())
-			}
-		} else {
-			inView = inView || false
-		}
-	}
-	a.inView = inView
-	return &seen, &direction
-}
-
-func (a *AnimalData) Draw(screen *ebiten.Image) {
-	a.drawAnimal(screen)
-}
-
+// Vor.: -
+// Eff.: Schreibt das Alter und die Gesundheit neben das Objekt
+// Erg.: -
 func (a *AnimalData) drawStats(screen *ebiten.Image) {
 
 	if a.moveable {
@@ -584,6 +521,9 @@ func (a *AnimalData) drawStats(screen *ebiten.Image) {
 	}
 }
 
+// Vor.: -
+// Eff.: Zeichnet das Sichtfeld des Objekts
+// Erg.: -
 func (a *AnimalData) drawView() *ebiten.DrawImageOptions {
 	w := float32(a.imgDebug.Bounds().Dx())
 	h := float32(a.imgDebug.Bounds().Dy())
@@ -619,27 +559,9 @@ func (a *AnimalData) drawView() *ebiten.DrawImageOptions {
 	return opD
 }
 
-/*
-func (a *AnimalData) drawDebug(screen *ebiten.Image) {
-	a.imgDebug.Clear()
-	w := float32(a.imgDebug.Bounds().Dx())
-	h := float32(a.imgDebug.Bounds().Dy())
-
-	if a.moveable {
-	} else {
-		// --- Transformation ---
-		opD.GeoM.Translate(float64(-w/2), -float64(h/2)) // Koordinaten zuerst in die Mitte des Bilder bewegen ...
-		opD.GeoM.Translate(a.pos[0], a.pos[1])           // ... und zum Schluss ein die gewünschte Stelle bewegen
-
-	}
-
-	screen.DrawImage(a.imgDebug, opD)
-}
-*/
-
-// Vor.: ?
+// Vor.: -
 // Eff.: Zeichnet ein Tier als Vektorgrafik mit Sichtfeld und Geschwindigkeitsvektor
-// Erg.: ?
+// Erg.: -
 func (a *AnimalData) drawAnimal(screen *ebiten.Image) {
 	if a.moveable {
 		if (*a.w).GetDebug() {
@@ -662,9 +584,9 @@ func (a *AnimalData) drawAnimal(screen *ebiten.Image) {
 	screen.DrawImage(a.img, op)
 }
 
-// Vor.: ?
+// Vor.: -
 // Eff.: Ein Kreisbogen wird erzeugt, dessen Mittelpunkt mittig in `img` gespeichert wird.
-// Erg.:
+// Erg.: -
 func (a *AnimalData) makeArc(img *ebiten.Image, radius float32, startAngle, endAngle float32, c color.NRGBA, line bool) {
 	w := float32(img.Bounds().Dx())
 	h := float32(img.Bounds().Dy())
