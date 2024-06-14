@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"ecosim/world"
 	"fmt"
-	"log"
 	"image"
 	"image/color"
+	"log"
 	"math"
 	"math/rand"
 
@@ -281,8 +281,6 @@ func (a *EntityData) SetViewAngle(ang float64) {
 	a.viewAngle = ang
 }
 
-
-
 func (a *EntityData) SetMaxVel(v float64) {
 	a.maxVel = v
 }
@@ -308,7 +306,6 @@ func (a *EntityData) GetMatureAge() int {
 func (a *EntityData) GetWorld() *world.World {
 	return a.w
 }
-
 
 func (a *EntityData) ApplyMove(others *[]Entity, preys *[]Entity) {
 	a.randomStep()
@@ -348,7 +345,7 @@ func (a *EntityData) ApplyMove(others *[]Entity, preys *[]Entity) {
 
 func (a *EntityData) SeeOthers(others *[]Entity) (*[]Entity, *[]vec) {
 	inView := false
-	var seen []Animal
+	var seen []Entity
 	var direction []vec
 
 	for _, other := range *others {
@@ -368,9 +365,8 @@ func (a *EntityData) SeeOthers(others *[]Entity) (*[]Entity, *[]vec) {
 	return &seen, &direction
 }
 
-
 func (a *EntityData) avoidCollisionWithSeenObjects(others *[]Entity) {
-  
+
 	avg := vec{0, 0}
 	_, dirs := a.SeeOthers(others)
 	for _, dir := range *dirs {
@@ -385,7 +381,6 @@ func (a *EntityData) avoidCollisionWithSeenObjects(others *[]Entity) {
 	z = z.Add(avg.Unit().Scale(-0.25)) // <== Ändert die Stärke, mit welcher die Objekte voneinander wegstreben
 	a.vel = a.vel.Unit().Scale(a.maxVel).Add(z)
 }
-
 
 // Vor.:
 // Eff.: Bewegt sich in Richtung des nächsten im Sichtfeld gelegenen Tiers/Essens
@@ -484,7 +479,7 @@ func (a *EntityData) repelFromWater() {
 
 	a.vel = a.vel.Add(repel)
 }
-  
+
 func (a *EntityData) Draw(screen *ebiten.Image) {
 	a.drawEntity(screen)
 }
