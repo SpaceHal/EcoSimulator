@@ -28,7 +28,3 @@ func New(w *world.World) *data {
 
 	return gr
 }
-
-func (gr *data) Update() {
-
-}

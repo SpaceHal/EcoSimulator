@@ -39,22 +39,17 @@ func New(w *world.World) *data {
 	return f
 }
 
-// Die neue Position e.pos aus e.vel und e.acc bestimmen und die Lebensenergie aktualisieren
 func (a *data) Update(others *[]Fox, preys *[]rabbits.Rabbit) (offSpring *data) {
 	a.IncAge()
 	a.ApplyMove(ToAnimals(others), rabbits.ToAnimals(preys))
 	offSpring = a.GetOffspring()
 	return offSpring
-
 }
 
 func (a *data) GetOffspring() *data {
 	if a.GetAge() > a.GetDateOfLastBirth() && a.GetHealth() > 100 {
 		a.SetDateOfLastBirth(a.GetAge() + rand.Intn(a.GetMatureAge()) + a.GetMatureAge())
-
 		nFox := New(a.GetWorld())
-		//fmt.Println("Geburt Fuchs: Eltern-Energy", a.GetHealth(), ", E-Alter", a.GetAge(), ", Kind-Energy", nFox.GetHealth(), ", K-Alter", nFox.GetAge())
-
 		return nFox
 	}
 	return nil

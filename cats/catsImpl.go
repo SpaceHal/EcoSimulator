@@ -13,7 +13,7 @@ type data struct {
 	entity.Entity
 }
 
-// Type Conversion
+
 func ToAnimals(cats *[]Cat) *[]entity.Entity {
 	var animals []entity.Entity
 	for _, f := range *cats {
@@ -41,8 +41,6 @@ func New(w *world.World) *data {
 	return c
 }
 
-// Die neue Position e.pos aus e.vel und e.acc bestimmen und die Lebensenergie aktualisieren
-// func (a *data) Update(others *[]Cat, preys *[]rabbits.Rabbit) (offSpring *data) {
 func (a *data) Update(others *[]Cat, preys1 *[]rabbits.Rabbit, preys2 *[]grass.Grass) (offSpring *data) {
 	a.IncAge()
 

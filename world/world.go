@@ -5,7 +5,7 @@ import (
 )
 
 // Vor.: -
-// Erg.: ein neuer Welt
+// Erg.: eine neue Welt
 // New (width, height float32, scale float32, img *ebiten.Image) *data // *data erfüllt das Interface World
 
 type World interface {
@@ -19,6 +19,9 @@ type World interface {
 	// Erg.: -
 	ToggleDebug()
 
+	// Vor.: -
+	// Eff.: Schaltet die Alter und Gesundheitsanzeige an und aus.
+	// Erg.: -
 	ToggleStatistics()
 
 	// Vor.: -
@@ -26,6 +29,9 @@ type World interface {
 	// Erg.: Liefert den aktuellen Status des Debug-Modus.
 	GetDebug() bool
 
+	// Vor.: -
+	// Eff.: -
+	// Erg.: Liefert den aktuellen Status des Stats-Modus (Alter und Gesundheitsanzeig).
 	GetShowStats() bool
 
 	// Vor.: -
@@ -69,11 +75,14 @@ type World interface {
 	// Erg.: -
 	GetTileBorders(x, y int) (n, no, o, so, s, sw, w, nw bool)
 
-	// Vor.:
-	// Eff.:
+	// Vor.: -
+	// Eff.: -
 	// Erg.: Der Abstand zum Wasser ist geliefert.
 	// Hat die Kachel keine Küste, sind die Werte 0
 	GetTileDstToWater(x, y int) (n, s, o, w int)
 
+	// Vor.: -
+	// Eff.: -
+	// Erg.: True ist geliefert, wenn die Koordinaten auf Land liegen.
 	IsLand(x, y int) bool
 }

@@ -164,17 +164,12 @@ func (g *Game) Update() error {
 			if !food[i].IsAlive() {
 				food = append(food[:i], food[i+1:]...)
 				eoa--
-				//fmt.Println("Ein Karotte weniger.", eoa, "leben noch.")
 			}
 		}
 	}
 	// neues Grass
 	if g.counter%30 == 0 && g != nil {
 		food = append(food, grass.New(&welt))
-	}
-
-	for _, b := range food {
-		b.Update() // Position neu bestimmen
 	}
 
 	// Alle Katzen aktualisieren

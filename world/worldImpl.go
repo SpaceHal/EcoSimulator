@@ -162,10 +162,6 @@ func (wo *data) GetTileSizeScaled() int {
 	return wo.scaledTileSize
 }
 
-// Vor.:
-// Eff.: Gibt für die Kachel mit den Pixelkoordinaten (x,y) an, ob in der Himmelsrichtung
-// N,S,O,W eine Wasserkachel liegt.
-// Erg.:
 func (wo *data) GetTileBorders(x, y int) (n, no, o, so, s, sw, w, nw bool) {
 	tileX, tileY := wo.GetXYTile(x, y)
 	//tileX := x / (int(wo.tileSize) * int(wo.scale))
@@ -208,36 +204,23 @@ func (wo *data) IsLand(x, y int) bool {
 	px, py := tx*wo.GetTileSizeScaled(), wo.GetTileSizeScaled()*ty
 	if n != -1 { // keine Wasserkachel
 		m := int(wo.GetTileSizeScaled())
-		//fmt.Println(m)
 		if px+w*2 <= x && px+m-o*2 >= x && py+n*2 <= y && py+m-s*2 >= y {
 			return true
 		}
-		//else {
-		//fmt.Println("x,y", int(x), int(y), "px,py", px, py, ", n s o w:", n, s, o, w, ",tile", m)
 		return false
-		//}
 	}
 	return false
 
 }
 
-// Vor.: -
-// Eff.: -
-// Erg.: Liefert die Breite der Welte in Pixel.
 func (wo *data) Width() float32 {
 	return wo.width
 }
 
-// Vor.: -
-// Eff.: -
-// Erg.: Liefert die Hoehe des Weltes in Pixel.
 func (wo *data) Height() float32 {
 	return wo.height
 }
 
-// Vor.: -
-// Eff.: -
-// Erg.: Liefert die Entfernung der Küste auf den Kacheln zur Kachelwand ohne Skalierung.
 func (wo *data) Margin() float32 {
 	return wo.margin
 }
@@ -275,8 +258,6 @@ func (wo *data) ToggleGround(mx, my int) {
 }
 
 func (wo *data) Draw(dst *ebiten.Image, c int) {
-	//dst.Fill(color.NRGBA{wo.r, wo.g, wo.b, wo.a})
-	//vector.StrokeRect(dst, wo.Margin, wo.Margin, wo.Width-2*wo.Margin, wo.Height-2*wo.Margin, 2, color.Gray{200}, true)
 
 	nW := waterImage.Bounds().Dx() // Gibt die Breite des Tilesheets
 	tileXCount := nW / wo.tileSize // Anzahl der Tiles in x Richtung im Tile Sheet (25)
@@ -581,5 +562,4 @@ func (wo *data) toggle(tileX, tileY int) {
 		}
 	}
 	wo.setTileInLayer(tileX, tileY, wo.layers[1], tileType)
-	//fmt.Printf("tx,ty: %d,%d (%d) stateOrth: %d, stateDiag: %d \n", tileX, tileY, tileX+(tileY*numTileX), stateOrth, stateDiag)
 }
