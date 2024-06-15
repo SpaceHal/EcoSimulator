@@ -14,23 +14,23 @@ import (
 )
 	
 type data struct {
-	x			float64
-	y 			float64
+	x float64
+	y float64
 }
 
 const (
-	padding	= 16
-	graphHeight = 128+64
-	graphWidth = 224
-	nPoints = 1000
-	yMax = 50
+	padding		= 16
+	graphHeight	= 192
+	graphWidth 	= 224
+	nPoints 	= 1000
+	yMax 		= 50
 )
 
 var (
-	colorGrass = color.RGBA{10,150,10,255}
-	colorRabbit = color.RGBA{120,120,120,255}
-	colorCat = color.RGBA{0,0,0,255}
-	colorFox = color.RGBA{180,50,50,255}
+	colorGrass 	= color.RGBA{10,150,10,255}
+	colorRabbit	= color.RGBA{120,120,120,255}
+	colorCat 	= color.RGBA{0,0,0,255}
+	colorFox 	= color.RGBA{180,50,50,255}
 )
 
 var (

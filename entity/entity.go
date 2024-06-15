@@ -10,14 +10,9 @@ import (
 
 type vec = ve.Vector
 
-type LivingEntity interface {
-	IsAlive() bool
-	Update()
-}
-  
 // Vor.: -
 // Erg.: ein neues Tier
-// New (w world.World, x, y float64) *data // *data erfüllt das Interface Entity
+// New (w world.World) *data // *data erfüllt das Interface Entity
   
 type Entity interface {
 	// Vor.: -

@@ -1,6 +1,7 @@
 package ui
 
 import (
+	. "ecosim/config"
 	"ecosim/checkboxes"
 	"ecosim/sliders"
 	"bytes"
@@ -35,10 +36,6 @@ var (
 )
 
 const (
-	NumberOfCats    = 5
-	NumberOfBunnies = 10
-	NumberOfFoxes   = 5
-	NumberOfGrass   = 20
 	padding             = 8
 	uiFontSize          = 16
 	lineSpacingInPixels = 60
@@ -74,16 +71,16 @@ func drawText(dst *ebiten.Image, x, y float64, size float64, str string) {
 
 func New() *data {
 	u := &data{
-		nGrass:   NumberOfGrass,
-		nBunnies: NumberOfBunnies,
-		nCats:    NumberOfCats,
-		nFoxes:   NumberOfFoxes,
+		nGrass:   GrassStartNumber,
+		nBunnies: BunnyStartNumber,
+		nCats:    CatStartNumber,
+		nFoxes:   FoxStartNumber,
 	}
 
 	u.cbGrass = checkboxes.New(leftIndent,lineSpacingInPixels * 3,"Grass",true)
 	u.cbGrass.SetOnClicked(func() {
 		if u.cbGrass.IsChecked() {
-			u.nGrass = NumberOfGrass
+			u.nGrass = GrassStartNumber
 			u.sGrass.SetActive(true)
 		} else {
 			u.nGrass = 0
@@ -91,7 +88,7 @@ func New() *data {
 		}
 	})
 
-	u.sGrass = sliders.New(leftIndent,lineSpacingInPixels * 4,NumberOfGrass,100,"Anzahl Grassflächen: ",true)
+	u.sGrass = sliders.New(leftIndent,lineSpacingInPixels * 4,GrassStartNumber,100,"Anzahl Grassflächen: ",true)
 	u.sGrass.SetOnMoved(func() {
 		u.nGrass = u.sGrass.GetValue()
 	})
@@ -99,7 +96,7 @@ func New() *data {
 	u.cbBunnies = checkboxes.New(leftIndent,lineSpacingInPixels * 5,"Hasen",true)
 	u.cbBunnies.SetOnClicked(func() {
 		if u.cbBunnies.IsChecked() {
-			u.nBunnies = NumberOfBunnies
+			u.nBunnies = BunnyStartNumber
 			u.sBunnies.SetActive(true)
 		} else {
 			u.nBunnies = 0
@@ -107,7 +104,7 @@ func New() *data {
 		}
 	})
 
-	u.sBunnies = sliders.New(leftIndent,lineSpacingInPixels * 6,NumberOfBunnies,50,"Anzahl Hasen: ",true)
+	u.sBunnies = sliders.New(leftIndent,lineSpacingInPixels * 6,BunnyStartNumber,50,"Anzahl Hasen: ",true)
 	u.sBunnies.SetOnMoved(func() {
 		u.nBunnies = u.sBunnies.GetValue()
 	})
@@ -115,7 +112,7 @@ func New() *data {
 	u.cbCats = checkboxes.New(leftIndent,lineSpacingInPixels * 7,"Katzen",true)
 	u.cbCats.SetOnClicked(func() {
 		if u.cbCats.IsChecked() {
-			u.nCats = NumberOfCats
+			u.nCats = CatStartNumber
 			u.sCats.SetActive(true)
 		} else {
 			u.nCats = 0
@@ -123,7 +120,7 @@ func New() *data {
 		}
 	})
 
-	u.sCats = sliders.New(leftIndent,lineSpacingInPixels * 8,NumberOfGrass,50,"Anzahl Katzen: ",true)
+	u.sCats = sliders.New(leftIndent,lineSpacingInPixels * 8,CatStartNumber,50,"Anzahl Katzen: ",true)
 	u.sCats.SetOnMoved(func() {
 		u.nCats = u.sCats.GetValue()
 	})
@@ -131,7 +128,7 @@ func New() *data {
 	u.cbFoxes = checkboxes.New(leftIndent,lineSpacingInPixels * 9,"Fuechse",true)
 	u.cbFoxes.SetOnClicked(func() {
 		if u.cbFoxes.IsChecked() {
-			u.nFoxes = NumberOfFoxes
+			u.nFoxes = FoxStartNumber
 			u.sFoxes.SetActive(true)
 		} else {
 			u.nFoxes = 0
@@ -139,7 +136,7 @@ func New() *data {
 		}
 	})
 
-	u.sFoxes = sliders.New(leftIndent,lineSpacingInPixels * 10,NumberOfFoxes,30,"Anzahl Füchse: ",true)
+	u.sFoxes = sliders.New(leftIndent,lineSpacingInPixels * 10,FoxStartNumber,30,"Anzahl Füchse: ",true)
 	u.sFoxes.SetOnMoved(func() {
 		u.nFoxes = u.sFoxes.GetValue()
 	})

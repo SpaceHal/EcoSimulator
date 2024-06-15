@@ -100,7 +100,13 @@ func (s *data) GetValue() int {
 }
 
 func (s *data) SetValue(v int) {
-	s.currentValue = v
+	if v < s.maxValue && v >= 0 {
+		s.currentValue = v
+	} else if v < 0 {
+		s.currentValue = 0
+	} else {
+		s.currentValue = s.maxValue
+	}
 }
 
 func (s *data) SetActive(a bool) {
