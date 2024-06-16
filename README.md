@@ -1,10 +1,17 @@
-# EcoSimulator
-LWB Softwareprojekt
+# Installation
+
+Alle notwendigen externen Pakete sind im Verzeichnis `vendor` hinterlegt. Damit alle Pakete genutzt werden können, muss der Go Modul-Modus aktiviert werden:
+```
+export GO111MODULE="on"
+```
+
+Gestartet wird dann wie gewöhnlich mit:
+```
+go run main
+```
+
 
 ## Linux
 Notwendige Pakete:
-Fedora
-```
-sudo dnf install mesa-libGL-devel mesa-libGLES-devel libXrandr-devel libXcursor-devel libXinerama-devel libXi-devel libXxf86vm-devel alsa-lib-devel pkg-config
-```
+
 
