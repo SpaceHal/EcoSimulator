@@ -13,7 +13,7 @@ type vec = ve.Vector
 // Vor.: -
 // Erg.: ein neues Tier
 // New (w world.World) *data // *data erfüllt das Interface Entity
-  
+
 type Entity interface {
 	// Vor.: -
 	// Eff.: -
@@ -21,8 +21,9 @@ type Entity interface {
 	// des Maximalalter nicht erreicht ist.
 	IsAlive() bool
 
-	// Vor.:-
-	// Eff.: Die Reduzierung der Gesundheit bei Zeitschritt ist gesetzt.
+	// Vor.: `Health` ist größer Null.
+	// Eff.: Die Reduzierung der Gesundheit pro Zeitschritt ist gesetzt.
+	// Die lineare Abnahme der Gesundheit (Health) ergibt sich durch `health/e`
 	// Erg.:-
 	SetHealthLoss(e float64)
 
@@ -85,7 +86,6 @@ type Entity interface {
 	// Eff.: -
 	// Erg.: Zeiger auf die Simulationswelt ist geliefert.
 	GetWorld() *world.World
-
 
 	// Vor.: -
 	// Eff.: Der Winkel des Sichfeld ist gesetzt
